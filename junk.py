@@ -1,3 +1,5 @@
+# simple test for commmit
+
 def reshape(self,fcrit=0.95,p=None):   #p_in,yk_in,vn,fcrit=0.95):
     """
     reshape the yk's based on the F-test of line compenents
