@@ -3,8 +3,6 @@
 import specpy.mtspec as mtspec
 import numpy as np
 import matplotlib.pyplot as plt
-import specpy.mtspec as mtspec
-
 
 #------------------------------------------------
 # Define desired parameters

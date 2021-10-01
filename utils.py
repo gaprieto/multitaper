@@ -329,7 +329,8 @@ def dpss(npts,nw,kspec=None):
 
     ********************************************************************
     """
-    
+
+   
     #-----------------------------------------------------
     # Check number of tapers
     #-----------------------------------------------------
@@ -362,21 +363,32 @@ def dpss(npts,nw,kspec=None):
         x      = np.arange(nint)
         y      = np.linspace(0,nint-1,npts,endpoint=True)
         for k in range(kspec):
-            I      = interp.interp1d(x, v2int[:,k], kind='quadratic') #'quadratic')
+            I      = interp.interp1d(x, v2int[:,k], kind='quadratic') 
+                                                        #'quadratic')
             v[:,k] = I(y)
             v[:,k] = v[:,k]*np.sqrt(float(nint)/float(npts))
 
+    #-----------------------------------------------------
+    # Normmalize functions
+    #-----------------------------------------------------
+
     # Normalize
     for i in range(kspec):
-        vnorm  = np.sum(v[:,i]**2)
+        vnorm  = np.sqrt(np.sum(v[:,i]**2))
         v[:,i] = v[:,i]/vnorm
 
     #-----------------------------------------------------
     # Get positive standard
     #-----------------------------------------------------
 
+    nx = npts%2
+    if (nx==1):
+        lh = int((npts+1)/2)
+    else:
+        lh = int(npts/2)
+
     for i in range(kspec):
-        if (v[1,i] < 0.0):
+        if (v[lh,i] < 0.0):
            v[:,i] = -v[:,i]
 
     lamb = dpss_ev(v,W)
@@ -386,6 +398,182 @@ def dpss(npts,nw,kspec=None):
 #-------------------------------------------------------------------------
 # end DPSS 
 #-------------------------------------------------------------------------
+
+def dpss2(npts,nw,nev=None):
+    """
+    Modified from F90 library:
+	German Prieto
+	December 2020
+
+    Calculation of the Discrete Prolate Spheroidal Sequences, and 
+    the correspondent eigenvalues. 
+
+    Slepian, D.     1978  Bell Sys Tech J v57 n5 1371-1430
+    Thomson, D. J.  1982  Proc IEEE v70 n9 1055-1096
+
+    Input:
+       npts    	the number of points in the series
+       nw    	the time-bandwidth product (number of Rayleigh bins)
+       kspec   	Optional, the desired number of tapers def = 2*nw-1
+
+    Output:
+       v     	the eigenvectors (tapers) are returned in v[npts,nev]
+       lamb 	the eigenvalues of the v's
+
+    The tapers are the eigenvectors of the tridiagonal matrix sigma(i,j)
+    [see Slepian(1978) eq 14 and 25.] They are also the eigenvectors of
+    the Toeplitz matrix eq. 18. We solve the tridiagonal system in
+
+    scipy.linalg.eigh_tridiagonal
+    
+    (real symmetric tridiagonal solver) for the tapers and use 
+    them in the integral equation in the frequency domain 
+    (dpss_ev subroutine) to get the eigenvalues more accurately, 
+    by performing Chebychev Gaussian Quadrature following Thomson's codes.
+   
+    First, we create the main and off-diagonal vectors of the 
+    tridiagonal matrix. We compute separetely the even and odd tapers, 
+    by calling eigh_tridiagonal from SCIPY.
+    
+    We, refine the eigenvalues, by computing the inner bandwidth 
+    energy in the frequency domain (eq. 2.6 Thomson). Also the "leakage"
+    (1 - eigenvalue) is estimated, independenly if necesary. 
+   
+
+    In SCIPY the codea are already available to calculate the DPSS. 
+    Eigenvalues are calculated using Chebeshev Quadrature. 
+
+    Code also performs interpolation if NPTS>1e5
+    Also, define DPSS to be positive-standard, meaning vn's always 
+    start positive, whether symmetric or not. 
+
+    calls 
+       scipy.signal.windows.dpss
+       dpss_ev
+
+    ********************************************************************
+    """
+
+    #-----------------------------------------------------
+    # Check number of tapers
+    #-----------------------------------------------------
+
+    bw = nw/float(npts)
+
+    if (nev is None):
+       nev = np.int(np.round(2*nw-1))
+
+    #-----------------------------------------------------
+    # Check size of vectors and half lengths
+    #-----------------------------------------------------
+ 
+    nx = npts%2
+    if (nx==1):
+        lh = int((npts+1)/2)
+    else:
+        lh = int(npts/2)
+
+    nodd  = int ((nev-(nev%2))/2)
+    neven = nev - nodd
+
+    com = np.cos(2.0*np.pi*bw)
+    hn  = float(npts-1.0)/2.0
+    r2  = np.sqrt(2.0)
+
+    # Initiate eigenvalues and eigenvectors
+    v     = np.zeros((npts,nev),dtype=float)
+    theta = np.zeros(nev,dtype=float)
+
+    #---------------------------------------------
+    # Do even tapers
+    #---------------------------------------------
+
+    fv1 = np.zeros(lh,dtype=float)
+    fv2 = np.zeros(lh,dtype=float)
+
+    for i in range(lh):
+        n = i
+        fv1[i]   = com*(hn - float(n))**2.0
+        fv2[i]   = float(n*(npts-n))/2.0
+
+    if (nx == 0):
+        fv1[lh-1] = com*(hn-float(lh-1))**2.0 + float(lh*(npts-lh))/2.0
+    else:
+        fv2[lh-1] = r2*fv2[lh-1]
+
+    fv3 = fv2[1:lh]
+    eigval,v2 = linalg.eigh_tridiagonal(fv1, fv2[1:lh],
+                     select='i',select_range=(lh-neven,lh-1))
+
+    if (nx==1):
+        for k in range(neven):
+            v[lh,k] = v[lh,k]*r2
+
+    for k in range(neven):
+        kr = k
+        k2 = 2*k
+
+        theta[k2] = eigval[kr]
+
+        nr = npts-1
+        for i in range(lh):
+           v[i,k2]  = v2[i,kr]
+           v[nr,k2] = v2[i,kr]
+           nr=nr-1
+    
+    #---------------------------------------------
+    # Do odd tapers
+    #---------------------------------------------
+
+    fv1 = np.zeros(lh,dtype=float)
+    fv2 = np.zeros(lh,dtype=float)
+
+    if (nodd > 0):   
+
+      for i in range(lh):
+         n = i
+         fv1[i]  = com*(hn - float(n))**2
+         fv2[i]  = float(n*(npts-n))/2.0
+   
+      if (nx == 0):
+         fv1[lh-1] = com*(hn-float(lh-1))**2 - float(lh*(npts-lh))/2.0
+   
+      eigval,v2 = linalg.eigh_tridiagonal(fv1, fv2[1:lh],
+                     select='i',select_range=(lh-nodd,lh-1))
+
+      for k in range(nodd):
+          kr = k
+          k2 = 2*k+1 
+          
+          theta[k2] = eigval[kr]
+
+          nr = npts-1
+          for i in range(lh):
+              v[i,k2]  = v2[i,kr]
+              v[nr,k2] = -v2[i,kr]
+              nr=nr-1
+
+    #---------------------------------------
+    # Normalize the eigenfunction
+    # and positive standard
+    #---------------------------------------
+
+    for i in range(nev):
+        vnorm  = np.sqrt(np.sum(v[:,i]**2))
+        v[:,i] = v[:,i]/vnorm
+        if (v[lh,i]<0.0):
+            v[:,i] = -v[:,i]
+
+
+    v = np.flip(v,axis=1)
+    lamb = dpss_ev(v,bw)
+
+    return v, lamb
+
+#-------------------------------------------------------------------------
+# end DPSS - my version 
+#-------------------------------------------------------------------------
+
 
 #-------------------------------------------------------------------------
 # Eigenspec
