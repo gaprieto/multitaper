@@ -975,6 +975,8 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
   		the code run much faster. 
     """
 
+    import scipy.optimize as optim
+
     npts  = np.shape(vn)[0] 
     kspec = np.shape(vn)[1]
     nfft  = np.shape(yk)[0]
@@ -1009,6 +1011,12 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
             ct,st = sft(vn[:,k],om) 
             Vj[i,k] = 1.0/np.sqrt(lamb[k])*complex(ct,st)
 
+#    fig = plt.figure()
+#    ax1 = fig.add_subplot(211)
+#    ax1.plot(np.real(Vj))
+#    ax2 = fig.add_subplot(212)
+#    ax2.plot(np.imag(Vj))
+
     #----------------------------------------------------------------
     # Create the vectorized Cjk matrix and Pjk matrix { Vj Vk* }
     #----------------------------------------------------------------
@@ -1025,7 +1033,7 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
             Pk[m,:] = np.conjugate(Vj[:,i]) * (Vj[:,k]);
 
     Pk[:,0]         = 0.5 * Pk[:,0];
-    Pk[:,nxi-1]       = 0.5 * Pk[:,nxi-1];
+    Pk[:,nxi-1]     = 0.5 * Pk[:,nxi-1];
 
     #-----------------------------------------------------------
     # I use the Chebyshev Polynomial as the expansion basis.
@@ -1037,6 +1045,7 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
     hquad  = np.zeros((nxi,1), dtype=float)
     Cjk    = np.zeros((L,1),   dtype=complex)
     cte    = np.zeros(nfft)
+    cte2   = np.zeros(nfft)
     slope  = np.zeros(nfft)
     quad   = np.zeros(nfft)
     sigma2 = np.zeros(nfft)
@@ -1061,17 +1070,39 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
     #----------------------------------------------------
 
     Q,R  = scipy.linalg.qr(hk);
+    Qt   = np.transpose(Q)
     Leye = np.eye(L)
     Ri,res,rnk,s = scipy.linalg.lstsq(R,Leye)
     covb = np.real(np.matmul(Ri,np.transpose(Ri))) 
 
+#    print(h1)
+
     for i in range(nfft):
        Cjk[:,0]    = C[:,i]
-       hmodel,res,rnk,s = scipy.linalg.lstsq(hk,Cjk)
-   
+#       hmodel,res,rnk,s = scipy.linalg.lstsq(hk,Cjk)
+       btilde    = np.matmul(Qt,Cjk) 
+       hmodel,res,rnk,s = scipy.linalg.lstsq(R,btilde)
+
+       #---------------------------------------------
+       # Estimate positive spectrumm
+       #---------------------------------------------
+       cte_out  = optim.nnls(np.real(h1), 
+                             np.real(Cjk[:,0]))[0]
+       #print('cte_out ', cte_out)
+       cte2[i]  = np.real(cte_out) 
+#       print(np.shape(h1),np.shape(cte2),np.shape(Cjk))
+       pred = h1*cte2[i]
+       Cjk2 = Cjk-pred
+       #---------------------------------------------
+       # Now, solve the derivatives
+       #---------------------------------------------
+       btilde    = np.matmul(Qt,Cjk2) 
+       hmodel,res,rnk,s = scipy.linalg.lstsq(R,btilde)
        cte[i]   = np.real(hmodel[0])
        slope[i] = -np.real(hmodel[1])
        quad[i]  = np.real(hmodel[2])
+
+#       print(i+1, spec[i,0],cte[i], cte2[i])
 
        pred = np.matmul(hk,np.real(hmodel))
        sigma2[i] = np.sum(np.abs(Cjk-pred)**2)/(L-nh) 
@@ -1079,6 +1110,22 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        cte_var[i]   = sigma2[i]*covb[0,0]
        slope_var[i] = sigma2[i]*covb[1,1]
        quad_var[i]  = sigma2[i]*covb[2,2]
+
+#       print(spec[i],cte[i], slope[i]/bp, quad[i]/bp**2)
+
+#    fig = plt.figure()
+#    plt.plot(cte)
+#    plt.plot(cte2)
+#    plt.plot(spec)
+#    plt.plot(quad)
+#    plt.xlim(0,1000) 
+#    fig = plt.figure()
+#    plt.plot(cte)
+#    plt.plot(cte2)
+#    plt.plot(slope)
+#    plt.plot(quad)
+#    plt.xlim(0,1000)    
+#    plt.show()
 
     slope = slope / (bp)
     quad  = quad  / (bp**2)
@@ -1091,7 +1138,9 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
         qicorr = (quad[i]**2)/((quad[i]**2) + quad_var[i] ) 
         qicorr = qicorr * (1/6)*(bp**2)*quad[i]
 
-        qispec[i] = spec[i] - qicorr
+        qispec[i] = cte2[i] - qicorr
+        #qispec[i] = spec[i] - qicorr
+
 
     ds  = slope;
     dds = quad;
