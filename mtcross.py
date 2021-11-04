@@ -120,6 +120,7 @@ class mtcross:
         phase = np.zeros((nfft,1),dtype=float)
         
         w_lev = wl*np.mean(Syy[:,0])
+        #print(np.mean(Syy[:,0]),w_lev)
         for i in range(nfft):
             phase[i,0] = np.arctan2(np.imag(Sxy[i,0]),np.real(Sxy[i,0])) 
             cohe[i,0]  = np.abs(Sxy[i,0])**2 / (Sxx[i,0]*Syy[i,0])
