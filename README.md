@@ -1,8 +1,12 @@
 # specpy
 Multitaper codes translated into Python. 
+
 SpecPy v.1.0
+
 Germán A. Prieto
+
 Departamento de Geociencias
+
 Universidad Nacional de Colomnbia
 
 I present an open-source Python package, SPECpy, forThe package not only includes power spectral density (PSD) estimation
