@@ -9,10 +9,6 @@ Departamento de Geociencias
 
 Universidad Nacional de Colomnbia
 
-I present an open-source Python package, SPECpy, forThe package not only includes power spectral density (PSD) estimation
-19 (with confidence intervals), but also multivariate problems including coherence, dual-frequency
-20 correlations, and deconvolution estimation. Implementation of the sine and quadratic multitaper
-21 algorithms are also available. For
 
 A collection of modules for spectral analysis using the multitaper algorithm. 
 The modules not only includes power spectral density (PSD) estimation with confidence intervals), but also multivariate problems including coherence, dual-frequency, correlations, and deconvolution estimation. Implementations of the sine and quadratic multitaper methods are also available. 
