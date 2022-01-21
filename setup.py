@@ -28,4 +28,5 @@ setup(version="1.0.0",
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.7',
+        ]
       )
