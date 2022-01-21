@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(version="1.0.0",
+setup(version="1.0.1",
       name='multitaper',
       packages=find_packages(),
       include_package_data=True,
@@ -22,4 +22,11 @@ setup(version="1.0.0",
       keywords=="spectral analysis, multitaper, coherence, deconvolution"
           "transfer function, line detection, jackknife",
       platforms='OS Independent',
+      classifiers=[
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.7',
+        ],
       )
