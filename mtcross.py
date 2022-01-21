@@ -17,8 +17,8 @@ import scipy
 from scipy import signal
 import scipy.linalg      as linalg
 import matplotlib.pyplot as plt
-import specpy.utils      as utils 
-import specpy.mtspec     as mtspec
+import multitaper.utils      as utils 
+import multitaper.mtspec     as mtspec
 
 class mtcross:
 

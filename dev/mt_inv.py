@@ -393,9 +393,9 @@ Germán A. Prieto
 """
 
 
-import specpy.mtspec as mtspec
-import specpy.utils as utils
-import specpy.mtcross as mtcross
+import multitaper.mtspec as mtspec
+import multitaper.utils as utils
+import multitaper.mtcross as mtcross
 import numpy as np
 import matplotlib.pyplot as plt
 

@@ -1,7 +1,7 @@
 # Testing DPSS codes. 
 
-import specpy.mtspec as mtspec
-import specpy.mtcross as mtcross
+import multitaper.mtspec as mtspec
+import multitaper.mtcross as mtcross
 import numpy as np
 import matplotlib.pyplot as plt
 

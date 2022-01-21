@@ -14,7 +14,7 @@ import scipy
 import scipy.signal as signal
 import scipy.linalg as linalg
 import matplotlib.pyplot as plt
-import specpy.utils as utils 
+import multitaper.utils as utils 
 import time
 
 #-------------------------------------------------------------------------
