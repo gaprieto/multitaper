@@ -1,32 +1,21 @@
 from setuptools import setup, find_packages
 
-setup(version="1.0.1",
-      name='multitaper',
-      packages=find_packages(),
-      include_package_data=True,
-      install_requires=[
-          'numpy',
-          'scipy',
-          'numba',
-          'matplotlib',
-          'jupyter',
-          'ipykernel',
-          'python>=3.7',
-          'requests',
-      ],
-      author="German A. Prieto",
-      author_email="gaprietogo@unal.edu.co",
-      description="Multitaper codes translated into Python",
-      license="GNU GENERAL PUBLIC LICENSE",
-      url="https://github.com/gaprieto/multitaper",
-      keywords=="spectral analysis, multitaper, coherence, deconvolution"
-          "transfer function, line detection, jackknife",
-      platforms='OS Independent',
-      classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
-        ],
-      )
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setup(
+    name="multitaper",
+    version="1.0.1",
+    author="German A. Prieto",
+    author_email="gaprietogo@unal.edu.co",
+    description="Multitaper codes translated into Python",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/gaprieto/multitaper",
+    classifiers=[
+        "Programming Language :: Python :: 3.7",
+        "Operating System :: OS Independent",
+    ],
+    packages=find_packages(),
+    python_requires=">=3.7",
+)
