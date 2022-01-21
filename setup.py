@@ -22,11 +22,4 @@ setup(version="1.0.0",
       keywords=="spectral analysis, multitaper, coherence, deconvolution"
           "transfer function, line detection, jackknife",
       platforms='OS Independent',
-      classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
-        ]
       )
