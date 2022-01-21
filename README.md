@@ -13,7 +13,7 @@ Universidad Nacional de Colomnbia
 A collection of modules for spectral analysis using the multitaper algorithm. 
 The modules not only includes power spectral density (PSD) estimation with confidence intervals, but also multivariate problems including coherence, dual-frequency, correlations, and deconvolution estimation. Implementations of the sine and quadratic multitaper methods are also available. 
 
-** SpecPy can also do:
+** multitaper can also do:
 
 DPSS calculation
 
