@@ -19,8 +19,8 @@ setup(version="1.0.0",
       description="Multitaper codes translated into Python",
       license="GNU GENERAL PUBLIC LICENSE",
       url="https://github.com/gaprieto/multitaper",
-      keywords=="spectral analysis, multitaper, coherence, deconvolution",
-          "transfer function, line detection, jackknife"
+      keywords=="spectral analysis, multitaper, coherence, deconvolution"
+          "transfer function, line detection, jackknife",
       platforms='OS Independent',
       classifiers=[
         'Environment :: Console',
