@@ -11,28 +11,42 @@ Universidad Nacional de Colomnbia
 
 
 A collection of modules for spectral analysis using the multitaper algorithm. 
-The modules not only includes power spectral density (PSD) estimation with confidence intervals), but also multivariate problems including coherence, dual-frequency, correlations, and deconvolution estimation. Implementations of the sine and quadratic multitaper methods are also available. 
+The modules not only includes power spectral density (PSD) estimation with confidence intervals, but also multivariate problems including coherence, dual-frequency, correlations, and deconvolution estimation. Implementations of the sine and quadratic multitaper methods are also available. 
 
 ** SpecPy can also do:
 
 DPSS calculation
+
     Calculates the discrete prolate functions (Slepian).
+
 Jacknife Errors 
+
     adaptively weighted jackknife 95% confidence intervals
+
 F-test
+
     F-test of line components of the spectra
+
 Line reshape
+
     reshapes the eigenft's around significant line components. 
+
 Dual-freq spectrum
+
     Calculates the single trace dual freq spectrum (coherence and 
     phase). Dual frequency between two signals is also possible. 
+
 Coherence
+
     Coherence between two signals. Ppssible conversion to time-domain. 
+
 Transfer function
+
     Calculates the transfer function between two signals. 
     Possible conversion to time-domain. 
 
 Documentation. 
+
 A collection of Jupyter Notebooks is available to reproduce the figures
 of the F90 paper (Prieto et al., 2009) and the Python version 
 (Prieto 2022 under review). It has examples of a number of uses of 
