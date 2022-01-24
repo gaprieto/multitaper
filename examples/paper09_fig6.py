@@ -1,5 +1,6 @@
 # Testing DPSS codes. 
 
+import multitaper.utils  as utils
 import multitaper.mtspec as mtspec
 import multitaper.mtcross as mtcross
 import numpy as np
@@ -17,8 +18,11 @@ kspec = 7
 # Load the data
 #------------------------------------------------
 
-x = np.loadtxt('../data/pasc.dat')
-y = np.loadtxt('../data/ado.dat')
+fname1 = utils.data_file('pasc.dat')
+fname2 = utils.data_file('ado.dat')
+
+x = np.loadtxt(fname1)   #'../data/pasc.dat')
+y = np.loadtxt(fname2)   #'../data/ado.dat')
 
 #------------------------------------------------
 # Get MTSPEC

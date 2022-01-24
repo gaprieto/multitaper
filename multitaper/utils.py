@@ -33,7 +33,6 @@ from scipy import signal
 import scipy.linalg as linalg
 import scipy.interpolate as interp
 import matplotlib.pyplot as plt
-import multitaper
 import os
 
 
@@ -2049,7 +2048,7 @@ def data_file(fname):
     # Define filename and path
     #------------------------------------------------
 
-    path1 = os.path.dirname(multitaper.__file__)
+    path1 = os.path.dirname(__file__)
     path2 = os.path.abspath(os.path.join(path1,'..'))
     f_in  = os.path.join(path2,'data',fname)
     
