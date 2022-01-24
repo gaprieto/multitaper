@@ -2034,12 +2034,6 @@ def curb(n, v_in):
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
-# SET_XINT - Set up weights and sample points for Ierly quadrature
-#-------------------------------------------------------------------------
-
-def set_xint(ising):
-
-#-------------------------------------------------------------------------
 # DATA_FILE - locate the absolute path for data file
 #-------------------------------------------------------------------------
 
@@ -2056,7 +2050,9 @@ def data_file(fname):
     path1 = os.path.dirname(multitaper.__file__)
     path2 = os.path.abspath(os.path.join(path1,'..'))
     f_in  = os.path.join(path2,'data',fname)
+    
     return f_in
+
 
 #-------------------------------------------------------------------------
 # end DATA_FILE
