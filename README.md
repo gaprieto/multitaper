@@ -1,7 +1,7 @@
 # multitaper - (before specpy)
 Multitaper codes translated into Python. 
 
-SpecPy v.1.0.1
+multitaper v.1.0.1
 
 Germán A. Prieto
 
@@ -13,7 +13,7 @@ Universidad Nacional de Colomnbia
 A collection of modules for spectral analysis using the multitaper algorithm. 
 The modules not only includes power spectral density (PSD) estimation with confidence intervals, but also multivariate problems including coherence, dual-frequency, correlations, and deconvolution estimation. Implementations of the sine and quadratic multitaper methods are also available. 
 
-** multitaper can also do:
+**multitaper** can also do:
 
 DPSS calculation
 
@@ -74,6 +74,7 @@ Uses Scipy for DPSS calculation.
 
 # Citation:
 Please use this reference when citing the codes. 
+
 Prieto, G.A. (2022). multitaper: A multitaper spectrum analysis package in Python. Seis. Res. Lett. Under review.
 
 and/or
