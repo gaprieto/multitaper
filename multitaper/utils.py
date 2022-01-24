@@ -33,7 +33,9 @@ from scipy import signal
 import scipy.linalg as linalg
 import scipy.interpolate as interp
 import matplotlib.pyplot as plt
+import multitaper
 import os
+
 
 #-------------------------------------------------------------------------
 # SET_XINT - Set up weights and sample points for Ierly quadrature

@@ -3,6 +3,15 @@
 import multitaper.mtspec as mtspec
 import numpy as np
 import matplotlib.pyplot as plt
+import multitaper.utils  as utils
+
+#------------------------------------------------
+# Define filename and path
+#------------------------------------------------
+
+fname = utils.data_file('PASC.dat')
+print('fname ', fname)
+
 
 #------------------------------------------------
 # Define desired parameters
@@ -15,7 +24,7 @@ kspec = 7
 # Load the data
 #------------------------------------------------
 
-x = np.loadtxt('../data/PASC.dat')
+x = np.loadtxt(fname)    #'../data/PASC.dat')
 npts = np.shape(x)[0]
 dt = 1.0 
 t  = np.arange(npts)*dt

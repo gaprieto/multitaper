@@ -4,6 +4,7 @@ import multitaper.mtspec as mtspec
 import multitaper.mtcross as mtcross
 import numpy as np
 import matplotlib.pyplot as plt
+import multitaper.utils  as utils
 
 def Qi(nf,trf,cohe,freq):
 
@@ -62,7 +63,14 @@ def Qi(nf,trf,cohe,freq):
     cavg = 6378. * (1. - 2.*travg) / (2.*(1.+travg)) 
 
     return avper, cavg
- 
+
+#------------------------------------------------
+# Define filename and path
+#------------------------------------------------
+
+fname = utils.data_file('/asc_akima.dat')
+print('fname ', fname)
+
 #------------------------------------------------
 # Define desired parameters
 #------------------------------------------------
@@ -73,7 +81,7 @@ kspec = 12
 # Load the data
 #------------------------------------------------
 
-data = np.loadtxt('../data/asc_akima.dat')
+data = np.loadtxt(fname)   #'../data/asc_akima.dat')
 t    = data[:,0]
 x    = data[:,2]
 y    = data[:,1]
