@@ -1,8 +1,16 @@
 # Testing DPSS codes. 
 
+import utils 
 import multitaper.mtspec as mtspec
 import numpy as np
 import matplotlib.pyplot as plt
+
+#------------------------------------------------
+# Define filename and path
+#------------------------------------------------
+
+fname = utils.data_file('v22_174_series.dat')
+print('fname ', fname)
 
 #------------------------------------------------
 # Define desired parameters
@@ -14,7 +22,7 @@ kspec = 5
 # Load the data
 #------------------------------------------------
 
-x    = np.loadtxt('../data/v22_174_series.dat')
+x    = np.loadtxt(fname)  # '../data/v22_174_series.dat'
 npts = np.shape(x)[0]
 dt   = 4930
 t    = np.arange(npts)*dt

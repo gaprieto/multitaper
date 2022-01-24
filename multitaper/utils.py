@@ -15,6 +15,8 @@ Contains:
    wt2dof     - calculate the d.o.f. of the multitaper
    df_spec    - Dual frequency spectrum, using two MTSPEC classes to compute.  
    sft        - the slow Fourier transform
+   data_file  - locate the file in the data folder
+
 
 For the sine multitaper
    sine_quick = quick sine multitaper spectrum
@@ -31,6 +33,7 @@ from scipy import signal
 import scipy.linalg as linalg
 import scipy.interpolate as interp
 import matplotlib.pyplot as plt
+import os
 
 #-------------------------------------------------------------------------
 # SET_XINT - Set up weights and sample points for Ierly quadrature
@@ -2030,6 +2033,34 @@ def curb(n, v_in):
 # end curb
 #-------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------
+# SET_XINT - Set up weights and sample points for Ierly quadrature
+#-------------------------------------------------------------------------
+
+def set_xint(ising):
+
+#-------------------------------------------------------------------------
+# DATA_FILE - locate the absolute path for data file
+#-------------------------------------------------------------------------
+
+def data_file(fname):
+    """
+    Find the absolute location of the file fname
+    within the multitaper package
+    """
+
+    #------------------------------------------------
+    # Define filename and path
+    #------------------------------------------------
+
+    path1 = os.path.dirname(multitaper.__file__)
+    path2 = os.path.abspath(os.path.join(path1,'..'))
+    f_in  = os.path.join(path2,'data',fname)
+    return f_in
+
+#-------------------------------------------------------------------------
+# end DATA_FILE
+#-------------------------------------------------------------------------
 
 
 
