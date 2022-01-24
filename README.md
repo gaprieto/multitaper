@@ -45,7 +45,22 @@ Transfer function
     Calculates the transfer function between two signals. 
     Possible conversion to time-domain. 
 
-Documentation. 
+# Installation
+The *multitaper* package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). pip installation not yet available. You can also simply download the folder and add to your Python path. 
+
+# With Conda:
+```python
+> conda install -c gprieto multitaper
+```
+# I recommend creating a virtual environment before:
+```python
+> conda create --name mtspec
+> conda activate mtspec
+> conda install -c gprieto multitaper
+```
+
+
+# Documentation 
 
 A collection of Jupyter Notebooks is available to reproduce the figures
 of the F90 paper (Prieto et al., 2009) and the Python version 
@@ -57,9 +72,9 @@ NOTES:
 Uses Scipy for FFT (fftw). 
 Uses Scipy for DPSS calculation. 
 
-Citation:
+# Citation:
 Please use this reference when citing the codes. 
-Prieto, g.A. (2022). SpecPy: A multitaper spectrum analysis package in Python. Seis. Res. Lett. Under review.
+Prieto, G.A. (2022). multitaper: A multitaper spectrum analysis package in Python. Seis. Res. Lett. Under review.
 
 and/or
 
