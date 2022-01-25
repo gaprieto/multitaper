@@ -68,7 +68,7 @@ def Qi(nf,trf,cohe,freq):
 # Define filename and path
 #------------------------------------------------
 
-fname = utils.data_file('/asc_akima.dat')
+fname = utils.data_file('asc_akima.dat')
 print('fname ', fname)
 
 #------------------------------------------------

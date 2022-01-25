@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="multitaper",
-    version="1.0.1",
+    version="1.0.2",
     author="German A. Prieto",
     author_email="gaprietogo@unal.edu.co",
     description="Multitaper codes translated into Python",
