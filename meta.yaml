@@ -21,6 +21,10 @@ requirements:
     - ipykernel
     - requests
 
+test:
+  source_files:
+    - test/run_test.py
+
 about:
   home: https://github.com/gaprieto/multitaper
   license: MIT
