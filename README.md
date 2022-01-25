@@ -15,26 +15,26 @@ The modules not only includes power spectral density (PSD) estimation with confi
 
 *multitaper* can also do:
 
-**DPSS calculation** 
+**DPSS calculation** -  
     Calculates the discrete prolate functions (Slepian).
 
-*Jacknife Errors*8 
+*Jacknife Errors** -  
     adaptively weighted jackknife 95% confidence intervals
 
-**F-test**
+**F-test** - 
     F-test of line components of the spectra
 
-**Line reshape**
+**Line reshape** - 
     reshapes the eigenft's around significant line components. 
 
-**Dual-freq spectrum**
+**Dual-freq spectrum** - 
     Calculates the single trace dual freq spectrum (coherence and 
     phase). Dual frequency between two signals is also possible. 
 
-**Coherence**
+**Coherence** - 
     Coherence between two signals. Ppssible conversion to time-domain. 
 
-**Transfer function**
+**Transfer function** - 
     Calculates the transfer function between two signals. 
     Possible conversion to time-domain. 
 
