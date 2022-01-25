@@ -14,5 +14,5 @@ setup(
     ],
     packages=find_packages(),
     python_requires=">=3.8",
-    data_files=[('data',['data/ADO.dat','data/PASC.dat','data/asc_akima.dat'])],
+    data_files=[('data',['data/*.dat'])],
 )   
