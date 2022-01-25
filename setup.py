@@ -17,5 +17,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
+    package_data={'multitaper':['data/*.dat']}
     python_requires=">=3.7",
 )

@@ -2048,8 +2048,7 @@ def data_file(fname):
     # Define filename and path
     #------------------------------------------------
 
-    path1 = os.path.dirname(__file__)
-    path2 = os.path.abspath(os.path.join(path1,'..'))
+    path2 = os.path.dirname(__file__)
     f_in  = os.path.join(path2,'data',fname)
     
     return f_in
