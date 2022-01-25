@@ -14,5 +14,7 @@ setup(
     ],
     packages=find_packages(),
     python_requires=">=3.8",
-    data_files=[('data',['data/*.dat'])],
+    data_files=[('data',['data/ADO.dat','data/PASC.dat','data/asc_akima.dat',
+        'crisanto_mesetas.dat','d18O_1.dat','d18O_2.dat','mesetas_src.dat',
+        'sgc_vmm_hhe.dat','v22_174_series.dat'])],
 )   
