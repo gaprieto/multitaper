@@ -55,6 +55,11 @@ The *multitaper* package is composed of a number of Python modules. As of Januar
 > conda install -c gprieto multitaper
 ```
 
+# With pip:
+```python
+> pip install multitaper
+```
+
 
 # Documentation 
 
