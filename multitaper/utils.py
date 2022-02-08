@@ -716,6 +716,12 @@ def adaptspec(yk,sk,lamb,iadapt=0):
         spec      = sbar 
         return spec, se, wt
 
+    #----------------------------------------------------
+    # Weight by eigenvalue of Slepian functions
+    #    iadapt=2
+    #----------------------------------------------------
+
+
     if (iadapt==2):
         for k in range(kspec):
             wt[:,k]  = lamb[k]
