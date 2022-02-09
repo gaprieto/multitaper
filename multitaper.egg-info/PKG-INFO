@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: multitaper
+Version: 1.0.4
+Summary: Multitaper codes translated into Python
+Home-page: https://github.com/gaprieto/multitaper
+Author: German A. Prieto 
+Author-email: gaprietogo@unal.edu.co
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+UNKNOWN
+

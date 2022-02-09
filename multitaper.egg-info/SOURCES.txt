@@ -1,0 +1,12 @@
+LICENSE
+README.md
+setup.cfg
+setup.py
+multitaper/__init__.py
+multitaper/mtcross.py
+multitaper/mtspec.py
+multitaper/utils.py
+multitaper.egg-info/PKG-INFO
+multitaper.egg-info/SOURCES.txt
+multitaper.egg-info/dependency_links.txt
+multitaper.egg-info/top_level.txt
