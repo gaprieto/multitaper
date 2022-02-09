@@ -2040,26 +2040,51 @@ def curb(n, v_in):
 # end curb
 #-------------------------------------------------------------------------
 
+
 #-------------------------------------------------------------------------
-# DATA_FILE - locate the absolute path for data file
+# DATA_FILE - get data file from ZENODO repository
 #-------------------------------------------------------------------------
 
-def data_file(fname):
+def get_data(fname):
     """
-    Find the absolute location of the file fname
-    within the multitaper package
+    Utility function to download the data from the Zenodo repository
+    with the direct URL path (fixed). 
+    Input:
+        fname - filename of the data to download
+    Output:
+        data - numpy array with the downloaded data
+
+    In case of error, data = 0 is returned
     """
-
-    #------------------------------------------------
-    # Define filename and path
-    #------------------------------------------------
-
-    path1 = os.path.dirname(__file__)
-    path2 = os.path.abspath(os.path.join(path1,'..'))
-    f_in  = os.path.join(path2,'data',fname)
     
-    return f_in
-
+    import numpy as np
+    
+    if (fname.find("v22")>-1):
+        url = 'https://zenodo.org/record/6025794/files/v22_174_series.dat?download=1'
+    elif (fname.find("hhe.dat")>-1):
+        url = 'https://zenodo.org/record/6025794/files/sgc_vmm_hhe.dat?download=1'
+    elif (fname.find("sgc_vmm.dat")>-1):
+        url = 'https://zenodo.org/record/6025794/files/sgc_vmm.dat?download=1'
+    elif (fname.find("sgc_surf")>-1):
+        url = 'https://zenodo.org/record/6025794/files/sgc_surf.dat?download=1'
+    elif (fname.find("sgc_mesetas")>-1):
+        url = 'https://zenodo.org/record/6025794/files/sgc_mesetas.dat?download=1'
+    elif (fname.find("PASC")>-1):
+        url = 'https://zenodo.org/record/6025794/files/PASC.dat?download=1'
+    elif (fname.find("_src")>-1):
+        url = 'https://zenodo.org/record/6025794/files/mesetas_src.dat?download=1'
+    elif (fname.find("crisanto")>-1):
+        url = 'https://zenodo.org/record/6025794/files/crisanto_mesetas.dat?download=1'
+    elif (fname.find("akima")>-1):
+        url = 'https://zenodo.org/record/6025794/files/asc_akima.dat?download=1'
+    elif (fname.find("ADO")>-1):
+        url = 'https://zenodo.org/record/6025794/files/ADO.dat?download=1'
+    else:
+        data = -1
+        
+    data = np.loadtxt(url)
+    
+    return data
 
 #-------------------------------------------------------------------------
 # end DATA_FILE
