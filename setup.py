@@ -13,5 +13,9 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
+    package_data={'examples': [
+    'examples/*',
+    'examples/figures/*',
+    ]},
     python_requires=">=3.8",
 )   
