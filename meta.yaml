@@ -1,6 +1,6 @@
 package:
   name: "multitaper"
-  version: "1.0.4b"
+  version: "1.0.4c"
 
 source:
   git_url: https://github.com/gaprieto/multitaper
@@ -21,18 +21,10 @@ requirements:
     - ipykernel
     - requests
 
-test:
-  source_files:
-    - test/run_test.py
-
 about:
   home: https://github.com/gaprieto/multitaper
   license: MIT
   license_familY: MIT
   license_file: LICENSE
   summary: "Multitaper codes translated into Python"
-
-extra:
-  recipe-maintainers:
-    - gaprieto
 
