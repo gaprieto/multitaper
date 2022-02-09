@@ -651,6 +651,7 @@ def spectrogram(data,dt,twin,olap=0.5,nw=3.5,kspec=5,fmin=0.0,fmax=-1.0,iadapt=0
     else:
         njump = int(np.round(twin*(1.0-olap))/dt)
 
+    npts  = np.size(data)
     nmax  = npts-nwin
     nvec  = np.arange(0,nmax,njump)
     t     = nvec*dt
