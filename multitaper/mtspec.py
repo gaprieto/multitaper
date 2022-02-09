@@ -670,7 +670,7 @@ def spectrogram(data,dt,twin,olap=0.5,nw=3.5,kspec=5,fmin=0.0,fmax=-1.0,iadapt=0
         i2  = i1+nwin
         x   = data[i1:i2+1]
 
-        psd = mtspec.mtspec(x,nw,kspec,dt,iadapt=iadapt,
+        psd = mtspec(x,nw,kspec,dt,iadapt=iadapt,
                             vn=vn,lamb=theta)
 
         freq2   = psd.freq
