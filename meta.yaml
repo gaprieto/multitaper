@@ -1,6 +1,6 @@
 package:
   name: "multitaper"
-  version: "1.0.4"
+  version: "1.0.4b"
 
 source:
   git_url: https://github.com/gaprieto/multitaper
