@@ -68,7 +68,7 @@ def Qi(nf,trf,cohe,freq):
 # Define filename and path
 #------------------------------------------------
 
-fname = utils.data_file('asc_akima.dat')
+fname = 'asc_akima.dat'
 print('fname ', fname)
 
 #------------------------------------------------
@@ -81,7 +81,7 @@ kspec = 12
 # Load the data
 #------------------------------------------------
 
-data = np.loadtxt(fname)   #'../data/asc_akima.dat')
+data = utils.get_data(fname)
 t    = data[:,0]
 x    = data[:,2]
 y    = data[:,1]

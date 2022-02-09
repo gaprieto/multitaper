@@ -9,7 +9,7 @@ import multitaper.utils  as utils
 # Define filename and path
 #------------------------------------------------
 
-fname = utils.data_file('PASC.dat')
+fname = 'PASC.dat'
 print('fname ', fname)
 
 
@@ -24,7 +24,7 @@ kspec = 7
 # Load the data
 #------------------------------------------------
 
-x = np.loadtxt(fname)    #'../data/PASC.dat')
+x    = utils.get_data(fname)
 npts = np.shape(x)[0]
 dt = 1.0 
 t  = np.arange(npts)*dt

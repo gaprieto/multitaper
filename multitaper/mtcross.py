@@ -1,3 +1,4 @@
+# Copyright 2022 Germán A. Prieto, MIT license
 """
 Module that contains all multivariate-multitaper codes. 
 Contains:
@@ -20,7 +21,7 @@ import matplotlib.pyplot as plt
 import multitaper.utils      as utils 
 import multitaper.mtspec     as mtspec
 
-class mtcross:
+class MTCross:
 
     def __init__(self,x,y,nw=4,kspec=0,dt=1.0,nfft=0,iadapt=0,wl=0.0):
         """
@@ -226,7 +227,7 @@ class mtcross:
 
         return xcorr, dcohy, dconv
 
-class sinecross:
+class SineCross:
 
     def __init__(self,x,y,ntap=0,ntimes=0,fact=1.0,dt=1.0,p=0.95):
 

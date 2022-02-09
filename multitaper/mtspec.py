@@ -1,8 +1,20 @@
+# Copyright 2022 Germán A. Prieto, MIT license
 """
-Module with all routines for multitaper 
-spectrum estimation (1D). 
-Contains:
-   mtspec - calculate the Thomson and/or Quadratic multitaper 
+Module with all routines for multitaper spectrum estimation (1D).
+
+Create portable serialized representations of Python objects.
+
+See module mtcross for bi-variate problems
+
+Classes:
+
+    MTSpec
+    MTSine
+
+Functions:
+
+    None
+
 """
 
 #-----------------------------------------------------
@@ -21,7 +33,7 @@ import time
 # MTSPEC main code 
 #-------------------------------------------------------------------------
 
-class mtspec:
+class MTSpec:
 
     def __init__(self,x,nw=4,kspec=0,dt=1.0,nfft=0,iadapt=0,vn=None,lamb=None):
         """
@@ -338,7 +350,7 @@ class mtspec:
 # CLASS MTSINE
 #------------------------------------------------------------------------------
 
-class mtsine:
+class MTSine:
 
     def __init__(self,x,ntap=0,ntimes=0,fact=1.0,dt=1.0):
         """
@@ -550,4 +562,131 @@ class mtsine:
 # end CLASS MTSINE
 #------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Functions
+#------------------------------------------------------------------------------
 
+#--------------------------
+# Spectrogram
+#--------------------------
+
+def spectrogram(data,dt,twin,olap=0.5,nw=3.5,kspec=5,fmin=0.0,fmax=-1.0,iadapt=0):
+    """
+    Computes a spectrogram with consecutive multitaper estimates.
+    Returns both Thomson's multitaper and the Quadratic multitaper estimate
+
+    Parameters
+    ----------
+    data : array_like (npts,)
+        Time series or sequence
+    dt : float
+        Sampling interval in seconds of the time series.
+    twin : float
+        Time duration in seconds of each segment for a single multitaper estimate.
+    olap : float, optional
+        Overlap requested for the segment in building the spectrogram. 
+        Defaults = 0.5, values must be (0.0 - 0.99).
+        Overlap rounds to the nearest integer point. 
+    nw : float, optional
+        Time-bandwidth product for Thomson's multitaper algorithm.
+        Default = 3.5
+    kspec : int, optional
+        Number of tapers for avearaging the multitaper estimate.
+        Default = 5
+    fmin : float, optional
+        Minimum frequency to estimate the spectrogram, otherwise returns the 
+        entire spectrogram matrix.
+        Default = 0.0 Hz
+    fmax : float, optional
+        Maximum frequency to estimate the spectrogram, otherwise returns the
+        entire spectrogram matrix. 
+        Default = 0.5/dt Hz (Nyquist frequency)
+    iadapt : integer, optional
+        User defined, determines which method for multitaper averaging to use. 
+        Default = 0
+        0 - Adaptive multitaper
+        1 - Eigenvalue weights
+        2 - Constant weighting
+
+    Returns
+    -------
+    f : ndarray
+        Array of sample frequencies.
+    t : ndarray
+        Array of segment times.
+    Quad : ndarray
+        Spectrogram of x using the quadratic multitaper estimate.
+    MT : ndarray
+        Spectrogram of x using Thomson's multitaper estimate.
+    
+    By default, the last axis of Quad/MT corresponds to the segment times.
+
+    See Also
+    --------
+    MTSpec: Multitaper estimate of a time series.
+
+    Notes
+    -----
+    The code assumes a real input signals and thus mainly returns the positive 
+    frequencies. For a complex input signals, code qould require adaptation.  
+
+    References
+    ----------
+    .. [1] Prieto, G.A. (2022). The multitaper spectrum analysis package in Python.
+           Seism. Res. Lett In review. 
+
+    Examples
+    --------
+
+    To do
+
+    """
+    
+    if (fmax<=0.0):
+        fmax = 0.5/dt
+    
+    nwin  = int(np.round(twin/dt))
+    if (olap<=0.0):
+        njump = nwin
+    else:
+        njump = int(np.round(twin*(1.0-olap))/dt)
+
+    nmax  = npts-nwin
+    nvec  = np.arange(0,nmax,njump)
+    t     = nvec*dt
+    nspec = len(nvec)
+
+    print('Window length %5.1fs and overlap %2.0f%%' %(twin, olap*100))
+    print('Total number of spectral estimates', nspec)
+    print('Frequency band of interest (%5.2f-%5.2f)Hz' %(fmin, fmax))
+
+    vn,theta = utils.dpss(nwin,nw,kspec)
+    for i in range(nspec):
+        if ((i+1)%10==0):
+            print('Loop ',i+1,' of ',nspec)
+
+        i1  = nvec[i]
+        i2  = i1+nwin
+        x   = data[i1:i2+1]
+
+        psd = mtspec.mtspec(x,nw,kspec,dt,iadapt=iadapt,
+                            vn=vn,lamb=theta)
+
+        freq2   = psd.freq
+        spec    = psd.spec 
+        qispec  = psd.qiinv()[0]   
+
+        nf         = len(freq2)
+
+        if (i==0):
+            fres   = np.where((freq2>=fmin) & (freq2<=fmax))[0]
+            nf     = len(fres)
+            f      = freq2[fres]
+            Quad   = np.zeros((nf,nspec),dtype=float)
+            MT     = np.zeros((nf,nspec),dtype=float)
+            print('Total frequency points %i' %(nf))
+
+        Quad[:,i]  = qispec[fres,0]
+        MT[:,i]    = spec[fres,0] 
+    
+    return t,f,Quad,MT

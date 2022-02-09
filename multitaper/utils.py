@@ -1,3 +1,4 @@
+# Copyright 2022 Germán A. Prieto, MIT license
 """
 Module with all the definitions (routines) of general use 
 of the multitaper routines. 

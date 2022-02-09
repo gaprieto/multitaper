@@ -18,11 +18,11 @@ kspec = 7
 # Load the data
 #------------------------------------------------
 
-fname1 = utils.data_file('pasc.dat')
-fname2 = utils.data_file('ado.dat')
+fname1 = 'PASC.dat'
+fname2 = 'ADO.dat'
 
-x = np.loadtxt(fname1)   #'../data/pasc.dat')
-y = np.loadtxt(fname2)   #'../data/ado.dat')
+x    = utils.get_data(fname1)
+y    = utils.get_data(fname2)
 
 #------------------------------------------------
 # Get MTSPEC

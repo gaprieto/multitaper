@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # Define filename and path
 #------------------------------------------------
 
-fname = utils.data_file('v22_174_series.dat')
+fname = 'v22_174_series.dat'
 print('fname ', fname)
 
 #------------------------------------------------
@@ -22,7 +22,7 @@ kspec = 5
 # Load the data
 #------------------------------------------------
 
-x    = np.loadtxt(fname)  # '../data/v22_174_series.dat'
+x    = utils.get_data(fname)
 npts = np.shape(x)[0]
 dt   = 4930
 t    = np.arange(npts)*dt
