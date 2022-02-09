@@ -21,6 +21,13 @@ requirements:
     - ipykernel
     - requests
 
+outputs:
+  - name: examples
+    files:
+      - examples/*.py
+      - examples/*.ipynb
+      - examples/figures
+
 about:
   home: https://github.com/gaprieto/multitaper
   license: MIT
