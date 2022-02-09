@@ -1,7 +1,7 @@
 # multitaper - (before specpy)
 Multitaper codes translated into Python. 
 
-*multitaper* v.1.0.4
+*multitaper* v.1.0.4b
 
 Germán A. Prieto
 
