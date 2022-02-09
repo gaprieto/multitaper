@@ -9,7 +9,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/gaprieto/multitaper",
     classifiers=[
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
