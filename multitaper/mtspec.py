@@ -1,19 +1,19 @@
 # Copyright 2022 Germán A. Prieto, MIT license
 """
-Module with all routines for multitaper spectrum estimation (1D).
-
-Create portable serialized representations of Python objects.
+Module with routines for univariate multitaper spectrum estimation (1D).
+Contains the main MTSpec and MTSine classes where the estimates 
+are made and stored.
 
 See module mtcross for bi-variate problems
 
 Classes:
 
-    MTSpec
-    MTSine
+    MTSpec - A class to represent Thomson's multitaper estimates
+    MTSine - A class to represent Sine Multitaper estimates
 
 Functions:
 
-    None
+    spectrogram - Computes a spectrogram with consecutive multitaper estimates.
 
 """
 
@@ -25,9 +25,7 @@ import numpy as np
 import scipy
 import scipy.signal as signal
 import scipy.linalg as linalg
-import matplotlib.pyplot as plt
 import multitaper.utils as utils 
-import time
 
 #-------------------------------------------------------------------------
 # MTSPEC main code 
@@ -35,10 +33,139 @@ import time
 
 class MTSpec:
 
+    """
+    MTSpec class
+        A class for univariate Thomson multitaper estimates
+   
+    References
+    ----------
+    Based on David J. Thomson's codes, Alan Chave and Thomson's Codes and
+    partial codes from EISPACK, Robert L. Parker and Glenn Ierley from
+    Scripps Institution of Oceanography. And my own Fortran90 library.
+
+    Notes
+    -----
+    The class is in charge of estimating the adaptive weigthed 
+    multitaper spectrum, as in Thomson 1982. 
+    This is done by estimating the dpss (discrete prolate spheroidal 
+    sequences), multiplying each of the kspec tapers with the data 
+    series, take the fft, and using the adaptive scheme for a better
+    estimation. 
+   
+    As a by product of the spectrum (spec), all intermediate steps 
+    are retained, which can be used for bi-variate analysis, deconvolotuion, 
+    returning to the time domain, etc. 
+    By-products include the complex information in yk, the eigenspectra sk, 
+    the jackknife 95% confidence intervals (spec_ci), the degrees 
+    of freedom (se) and the weigths wt(nf,kspec) used.
+    See below for a complete list. 
+    
+    Attibutes
+    ---------
+
+    - Parameters
+    npts   : int
+        number of points of time series
+    nfft   : int
+        number of points of FFT. Dafault adds padding. 
+    nw     : flaot
+        time-bandwidth product
+    kspec  : int
+        number of tapers to use
+
+    - Time series
+    x      : ndarray [npts]
+        time series
+    xvar   : float
+        variance of time series
+    dt     : float
+        sampling interval
+
+    - Frequency vector
+    nf     : int
+        number of unique frequency points of spectral 
+        estimate, assuming real time series
+    freq   : ndarray [nfft]
+        frequency vector in Hz
+    df     : float
+        frequncy sampling interval
+
+    - Method
+    iadapt : int
+        defines methos to use
+        0 - adaptive multitaper
+        1 - unweighted, wt =1 for all tapers
+        2 - wt by the eigenvalue of DPSS
+    ireal  : int
+        0 - real time series
+        1 - complex time series
+
+    - DPSS tapers and eigenvalues
+    vn     : ndarray [npts,kspec]
+        Slepian sequences
+    lamb   : ndarray [kspec]
+        Eigenvalues of Slepian sequences
+
+    - Spectral estimates
+    yk     : complex ndarray [nfft,kspec]
+        eigencoefficients, fft of tapered series
+    sk     : ndarray [nfft,kspec]
+        eigenspectra, power spectra for each yk
+    spec   : ndarray [nfft,1] 
+        multitaper estimate
+    se     : ndarray [nfft,1] 
+        degrees of freedom of estimate
+    wt     : ndarray [nfft,kspec]
+        weights for each eigencoefficient at each frequency
+
+    Methods
+    -------
+
+    init     : Constructor of the MTSpec class
+    rspec    : returns the positive frequency of the spectra only
+    reshape  : reshape yk's based on F-test of line components
+    jackspec : estimate 95% confidence interval of multitaper estimate
+    qiinv    : the quadratic inverse spectral estimate
+    ftest    : F-test of line components in the spectra
+    df_spec  : dual-frequency autospectra 
+
+
+    Modified
+    --------
+	German Prieto
+	January 2022
+       
+   """
+
     def __init__(self,x,nw=4,kspec=0,dt=1.0,nfft=0,iadapt=0,vn=None,lamb=None):
         """
-        put some notes here
-        Only works so far, on a single dimensional direction
+        The constructor of the MTSpec class.
+        It performs main steps in multitaper estimation, saving the
+        MTSpec class variable with attributes described above. 
+
+        Parameters
+        ----------
+        x : ndarray [npts,]
+            Time series to analyze
+        nw : float, optional
+            time bandwidth product, default = 4
+        kspec : int, optional
+            number of tapers, default = 2*nw-1
+        dt : float, optional
+            sampling interval of x, default = 1.0
+        nfft : int, optional
+            number of frequency points for FFT, allowing for padding
+            default = 2*npts+1
+        iadapt : int, optional
+            defines methos to use, default = 0
+            0 - adaptive multitaper
+            1 - unweighted, wt =1 for all tapers
+            2 - wt by the eigenvalue of DPSS
+        vn : ndarray [npts,kspec], optional
+            Slepian sequences, can be precomputed to save time
+        lamb : ndarray [kspec], optional
+            Eigenvalues of DPSS, can be precomputed to save time
+
         """
 
         #-----------------------------------------------------
@@ -169,13 +296,17 @@ class MTSpec:
 
     def rspec(self,*args):
         """
-        If input signal is real, returns the positive frequencies 
-        only. It keeps the power correct (twice power in positive 
-        frequencies, except at freq=0 and freq=fnyq) 
-        
-        If input is another vector (qispec, spec_ci, etc) then 
-        only that vector is processed. 
-        Vector must be real (must be power spectrum or derivatives)
+        Returns the spetra at positive frequencies, checking that 
+        a real input signal was used.
+
+        Parameters
+        ----------
+        self : MTSpec class variable
+
+        *args : ndarray
+            another array to return the positive frequencies. 
+            Could be qispec, spec_ci, etc.
+
         """
 
         nargs = len(args)
@@ -225,9 +356,41 @@ class MTSpec:
     # Remove lines, save spectrum without lines
     #----------------------------------------------------------------
 
-    def reshape(self,fcrit=0.95,p=None):   #p_in,yk_in,vn,fcrit=0.95):
+    def reshape(self,fcrit=0.95,p=None):   
         """
+        Reshape eigenft's (yk) around significant spectral lines
+        The "significant" means above fcritical probability (0.95)
+        If probability is large at neighbouring frequencies, I will 
+        only remove the largest probability energy. 
+
+        Returns recalculated yk, sk, spec, wt, and se
+
+        Parameters
+        ----------
+        self : MTSpec class variable
+        fcrit : float optional
+            Probability value over which to reshape, default = 0.95
+        p : ndarray optional [nfft] 
+            F-test probabilities to find fcritical
+            If None, it will be calculated
+
+        Returns
+        -------
+        respec : ndarray [nfft]
+            The reshaped PSD estimate 
+        spec : ndarray [nfft]
+            the PSD without the line components
+        yk : ndarray [nfft,kspec]
+            the eigenft's without line components
+        sline : ndarray [nfft]
+            the PSD of the line components only
+
+        Calls
+        -----
+        utils.yk_reshape
+
         reshape the yk's based on the F-test of line compenents
+
         """
 
         if (p is None):
@@ -266,6 +429,25 @@ class MTSpec:
 
     def jackspec(self):
 
+        """
+        code to calculate adaptively weighted jackknifed 95% confidence limits
+
+        Parameters
+        ----------
+        self : MTSpec class variable
+ 
+        Returns
+        -------
+        spec_ci : ndarray [nfft,2]
+            real array of jackknife error estimates, with 5 and 95%
+            confidence intervals of the spectrum.
+
+        Calls
+        -----
+        utils.jackspec
+
+        """
+
         spec_ci = utils.jackspec(self.spec,self.sk,self.wt,self.se)
 
         return spec_ci 
@@ -278,13 +460,43 @@ class MTSpec:
     # qiinv
     #-------------------------------------------------------------------------
     
-    def qiinv(self): #spec,yk,wt,vn,lamb,nw):
-    
+    def qiinv(self): 
         """
         Function to calculate the Quadratic Spectrum using the method 
         developed by Prieto et al. (2007).   
         The first 2 derivatives of the spectrum are estimated and the 
         bias associated with curvature (2nd derivative) is reduced. 
+
+        Calculate the Stationary Inverse Theory Spectrum.
+        Basically, compute the spectrum inside the innerband. 
+  
+        This approach is very similar to D.J. Thomson (1990).
+
+        Parameters
+        ----------
+        self : MTSpec class
+            Contains the multitaper estimate
+
+        Returns
+        -------
+        qispec : ndarray [nfft,0]
+            the QI spectrum estimate
+        ds : ndarray [nfft,0]	
+            the estimate of the first derivative
+        dds : ndarray [nfft,0]	
+            the estimate of the second derivative
+
+        References
+        ----------
+        G. A. Prieto, R. L. Parker, D. J. Thomson, F. L. Vernon, 
+        and R. L. Graham (2007), Reducing the bias of multitaper 
+        spectrum estimates,  Geophys. J. Int., 171, 1269-1281. 
+        doi: 10.1111/j.1365-246X.2007.03592.x.
+  
+        Calls
+        -----
+        utils.qiinv
+
         """
    
         qispec, ds, dds = utils.qiinv(self.spec,self.yk,
@@ -312,9 +524,27 @@ class MTSpec:
     # ftest
     #-------------------------------------------------------------------------
     
-    def ftest(self): #vn,yk):
+    def ftest(self):
         """
         Performs the F test for a line component
+        Computes F-test for single spectral line components
+        at the frequency bins given in the MTSpec class.
+
+        Parameters
+        ----------
+        self : MTSpec class with the multitaper estimate
+
+        Returns
+        -------
+  	    F : ndarray [nfft]
+            vector of f-test values, real
+  	    p : ndarray [nfft]
+            vector with probability of line component
+  
+        Calls
+        -----
+        utils.f_test
+
         """
    
         F,p   = utils.ftest(self.vn, self.yk)
@@ -332,6 +562,25 @@ class MTSpec:
     def df_spec(self):
         """
         Performs the dual-frequency spectrum of a signal with itself.
+
+        Parameters
+        ----------
+        self : MTSpec class with the multitaper estimate
+
+        Returns
+        -------
+
+        df_spec : ndarray complex, 2D (nf,nf)
+            the complex dual-frequency cross-spectrum. Not normalized
+        df_cohe : ndarray, 2D (nf,nf)
+            MSC, dual-freq coherence matrix. Normalized (0.0,1.0)
+        df_phase : ndarray, 2D (nf,nf)
+            the dual-frequency phase
+
+        Calls
+        -----
+        utils.df_spec
+
         """
    
         df_spec, df_cohe, df_phase = utils.df_spec(self)
@@ -352,19 +601,94 @@ class MTSpec:
 
 class MTSine:
 
+    """
+    MTSine class
+        A class for univariate Sine multitaper estimates
+
+    Notes
+    -----
+    The class is in charge of estimating the adaptive sine 
+    multitaper as in Riedel and Sidorenko (1995). 
+    This is done by performing a MSE adaptive estimation. First
+    a pilot spectral estimate is used, and S" is estimated, in 
+    order to get te number of tapers to use, using (13) of 
+    R & S for a min square error spectrum.
+
+    Attibutes
+    ---------
+
+    - Parameters
+    npts   : int
+        number of points of time series
+    nfft   : int
+        number of points of FFT. nfft = 2*npts
+
+    - Time series
+    x      : ndarray [npts]
+        time series
+    xvar   : float
+        variance of time series
+    dt     : float
+        sampling interval
+
+    - Frequency vector
+    nf     : int
+        number of unique frequency points of spectral 
+        estimate, assuming real time series
+    freq   : ndarray [nfft]
+        frequency vector in Hz
+    df     : float
+        frequncy sampling interval
+
+    - Method
+    ntap   : int
+        fixed number of tapers
+        if ntap<0, use kopt
+    kopt   : ndarray [nfft,1] 
+        number of tapers at each frequency
+    ntimes : int
+        number of max iterations to perform
+    ireal  : int
+        0 - real time series
+        1 - complex time series
+
+    - Spectral estimates
+    spec   : ndarray [nfft,1] 
+        multitaper estimate
+    err     : ndarray [nfft,2]
+        1-std confidence interval of spectral estimate
+        simple dof estimate
+
+    """
+
     def __init__(self,x,ntap=0,ntimes=0,fact=1.0,dt=1.0):
         """
-        Performs the PSD estimation by the sie multitaper method of
+        Performs the PSD estimation by the sine multitaper method
+     
+        References
+        ----------
         Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
-      
+
         Based on Bob Parker psd.f codes. Most of the comments come 
         his documentation as well.
+
+        Parameters
+        ----------
+        x : ndarray [npts]	
+            real, data vector
+      	ntap : int, optional
+            constant number of tapers (def = 0)
+      	ntimes : int, optional
+            number of iterations to perform
+      	fact : float, optional
+            degree of smoothing (def = 1.)
+       	dt : float
+            sampling interval of time series
       
-        Last Modified:
-      	German Prieto
-      	September 22 2005
-      	
-        The subroutine is in charge of estimating the adaptive sine 
+        
+        Notes
+        -----
+        This function is in charge of estimating the adaptive sine 
         multitaper as in Riedel and Sidorenko (1995). 
         This is done by performing a MSE adaptive estimation. First
         a pilot spectral estimate is used, and S" is estimated, in 
@@ -402,23 +726,16 @@ class MTSine:
         valleys, or small sample sizes. Instead use Thomson multitaper
         in mtspec in this same library. 
       
-        INPUT
-      	  x[npts]	real, data vector
-      	  ntap		integer, constant number of tapers (def = 0)
-      	  ntimes	integer, number of iterations to perform
-      	  fact		real, degree of smoothing (def = 1.)
-       	  dt		real, sampling rate of time series
-      
-        OUTPUT
-      	  freq(nfft)	real vector with frequency bins
-      	  spec(nfft)	real vector with the adaptive estimated spectrum
-        Note: NFFT is 2*NPTS
-
-        OPTIONAL OUTPUT
-          kopt(nf)	integer, number of taper per freq point
-      	  err(nf,2)	1-std errors (simple dof estimate)
       	
-        calls quick, adapt
+        Modified
+        --------
+      	German Prieto
+      	September 22 2005
+
+
+        Calls
+        -----
+        utils.quick, utils.adapt
       
         """
 
@@ -670,7 +987,7 @@ def spectrogram(data,dt,twin,olap=0.5,nw=3.5,kspec=5,fmin=0.0,fmax=-1.0,iadapt=0
         i2  = i1+nwin
         x   = data[i1:i2+1]
 
-        psd = mtspec(x,nw,kspec,dt,iadapt=iadapt,
+        psd = MTSpec(x,nw,kspec,dt,iadapt=iadapt,
                             vn=vn,lamb=theta)
 
         freq2   = psd.freq

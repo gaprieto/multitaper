@@ -1,6 +1,6 @@
 # Testing DPSS codes. 
 
-import multitaper.mtspec as mtspec
+import multitaper.mtspec as spec
 import numpy as np
 import matplotlib.pyplot as plt
 import multitaper.utils  as utils
@@ -35,7 +35,7 @@ t  = np.arange(npts)*dt
 #------------------------------------------------
 
 print('----- Calculating Sine Multitaper ------')
-sine_psd    = mtspec.mtsine(x,ntap=0,ntimes=2,fact=1.0,dt=dt)
+sine_psd    = spec.MTSine(x,ntap=0,ntimes=2,fact=1.0,dt=dt)
 print('----------------------------------------')
 #------------------------------------------------
 # Get MTSPEC
@@ -44,7 +44,7 @@ print('----------------------------------------')
 #------------------------------------------------
 
 print('------ Calculating Thomson Multitaper --------')
-psd    = mtspec.mtspec(x,nw,kspec,dt,iadapt=0)
+psd    = spec.MTSpec(x,nw,kspec,dt,iadapt=0)
 print('----------------------------------------------')
 print('------ Calculating Quadratic Multitaper ------')
 qispec = psd.qiinv()[0]

@@ -16,11 +16,13 @@ Contains:
    wt2dof     - calculate the d.o.f. of the multitaper
    df_spec    - Dual frequency spectrum, using two MTSPEC classes to compute.  
    sft        - the slow Fourier transform
-   data_file  - locate the file in the data folder
-
-
-For the sine multitaper
-   sine_quick = quick sine multitaper spectrum
+   squick     - for sine multitaper, constructs average multitaper
+   squick2    - for sine multitaper, constructs average multitaper, 2 signals
+   sadapt     - for sine multitaper, adaptive estimation of # of tapers
+   sadapt2    - for sine multitaper, same but for 2 signals
+   north      - for sine multitaper, derivatives of spectrum
+   curb       - for sine multitaper, clips # of tapers
+   get_data   - download data and load into numpy array 
 
 """
 
@@ -33,8 +35,9 @@ import scipy
 from scipy import signal
 import scipy.linalg as linalg
 import scipy.interpolate as interp
-import matplotlib.pyplot as plt
+import scipy.optimize as optim
 import os
+
 
 
 #-------------------------------------------------------------------------
@@ -43,25 +46,31 @@ import os
 
 def set_xint(ising):
     """
-    Modified
-    	German Prieto
-    	November 2004
-    
     Sets up weights and sample points for Ierley quadrature,
     
     Slightly changed from original code, to avoid using common
     blocks. Also avoided using some go to statements, not needed.
     
-    Input:
-    	ising=1 	- integrand is analytic in closed interval
-    	ising=2		- integrand may have bounded singularities
-    			  at end points
+    Parameters
+    ----------
+    ising : integer
+        ising=1 	integrand is analytic in closed interval
+        ising=2		integrand may have bounded singularities 
+                    at end points
        
-    Returns: 
-       	w(nomx,lomx+1)	- weights
-      	x(lomx+1)	- sample points
+    Returns
+    -------
+    w : ndarray (nomx,lomx+1)
+        weights
+    x : sample points (lomx+1)	
+        sample points
     
     lomx=number of samples = 2**nomx
+
+    Modified
+    --------
+    November 2004 (German A. Prieto)
+
     """
 
     nomx = 8
@@ -108,23 +117,36 @@ def set_xint(ising):
     # end index loop         
       
     return w, x
+
 #-------------------------------------------------------------------------
 # XINT - Numerical integration in the Fourier Domain using Ierly's method
 #-------------------------------------------------------------------------
 
 def xint(a,b,tol,vn,npts):
     """
-    
-    Modified
-    	German Prieto
-    	November 2004
-    
     Quadrature by Ierley's method of Chebychev sampling.
     
+    Parameters
+    ----------
+
+    a : float
+        upper limit of integration
+    b : float
+        upper limit of integration
+    tol : float
+        tolerance for integration
+    vn : ndarray
+        taper or Slepian sequence to convert-integrate
+    npts : int
+        number of points of tapers
+
+    Notes
+    -----
+
     This is a slight variation of Gleen Ierly's code. What was
     mainly done, was to avoid use of common blocks, defining all
     variables and performing the numerical integration inside
-    (previously done by function pssevf.
+    (previously done by function pssevf).
     
     Exponential convergence rate for analytic functions!  Much faster 
     than Romberg; competitive with Gauss integration, without awkward 
@@ -142,7 +164,7 @@ def xint(a,b,tol,vn,npts):
     nval = number of function calls made by routine
     etol = approximate magnitude of the error of the result
      
-    NB:  subroutine  set_xint  is called once before  xint  to
+    NB:  function set_xint is called once before  xint  to
          provide quadrature samples and weights.
     
          I also altered the subroutine call, to get the weights
@@ -150,8 +172,14 @@ def xint(a,b,tol,vn,npts):
          directly back.
     
     lomx=number of samples = 2**nomx
-    
-    calls set_xint
+   
+    Modified
+    --------
+    November 2004 (German A. Prieto)
+
+    Calls
+    -----
+    utils.set_xint
     
     """
 
@@ -261,29 +289,37 @@ def dpss_ev(vn,w,atol=1e-14):
     Recalculate the DPSS eigenvalues, performing the 
     integration in the -W:W range, using Quadrature. 
 
-    Modified
-	German Prieto
-	November 2004
-
     computes eigenvalues for the discrete prolate spheroidal sequences
     in efn by integration of the corresponding squared discrete prolate
     spheroidal wavefunctions over the inner domain. Due to symmetry, we
     perform integration from zero to w. 
     We use Chebychev quadrature for the numerical integration. 
   
-    Input:
-       vn     - DPSS to calculate eigenvalues 
-       w      - the bandwidth (= time-bandwidth product/ndata)
-       atol   - absolute error tolerance for the integration. this should
-                be set to 10**-n, where n is the number of significant figures
-                that can be be represented on the machine.
-                default = 1e-14
+    Parameters
+    ----------
+    vn : ndarray [npts,kspec]
+        DPSS to calculate eigenvalues 
+    w : float
+        the bandwidth (= time-bandwidth product/ndata)
+    atol : float, optional
+        absolute error tolerance for the integration. this should
+        be set to 10**-n, where n is the number of significant figures
+        that can be be represented on the machine.
+        default = 1e-14
 
-    Output:
-       lamb  - vector of length vn.shape[1] to contain the eigenvalues
- 
-    calls function:
-       xint 
+    Returns
+    -------
+    lamb : ndarray [kspec]
+        vector of length vn.shape[1], contains the eigenvalues
+
+    Modified
+    --------
+	November 2004 (German A. Prieto)
+
+    Calls
+    -----
+    xint
+
     """
 
     npts  = np.shape(vn)[0]
@@ -303,36 +339,45 @@ def dpss_ev(vn,w,atol=1e-14):
 
 def dpss(npts,nw,kspec=None):
     """
-    Modified from F90 library:
-	German Prieto
-	December 2020
-
     Calculation of the Discrete Prolate Spheroidal Sequences, and 
     the correspondent eigenvalues. 
 
     Slepian, D.     1978  Bell Sys Tech J v57 n5 1371-1430
     Thomson, D. J.  1982  Proc IEEE v70 n9 1055-1096
 
-    Input:
-       npts    	the number of points in the series
-       nw    	the time-bandwidth product (number of Rayleigh bins)
-       kspec   	Optional, the desired number of tapers def = 2*nw-1
+    Parameters
+    ----------
+    npts : int
+        the number of points in the series
+    nw : float
+        the time-bandwidth product (number of Rayleigh bins)
+    kspec : int
+        Optional, the desired number of tapers default = 2*nw-1
 
-    Output:
-       v     	the eigenvectors (tapers) are returned in v[npts,nev]
-       lamb 	the eigenvalues of the v's
+    Returns
+    -------
+    v : ndarray (npts,kspec)
+        the eigenvectors (tapers) are returned in v[npts,nev]
+    lamb : ndarray (kspec) 	
+        the eigenvalues of the v's
 
-    In SCIPY the codea are already available to calculate the DPSS. 
+    Notes
+    -----
+    In SCIPY the codes are already available to calculate the DPSS. 
     Eigenvalues are calculated using Chebeshev Quadrature. 
     Code also performs interpolation if NPTS>1e5
     Also, define DPSS to be positive-standard, meaning vn's always 
     start positive, whether symmetric or not. 
 
-    calls 
-       scipy.signal.windows.dpss
-       dpss_ev
+    Modified
+    --------
+	December 2020
 
-    ********************************************************************
+    Calls
+    -----
+    scipy.signal.windows.dpss
+    dpss_ev
+
     """
 
    
@@ -377,7 +422,6 @@ def dpss(npts,nw,kspec=None):
     # Normmalize functions
     #-----------------------------------------------------
 
-    # Normalize
     for i in range(kspec):
         vnorm  = np.sqrt(np.sum(v[:,i]**2))
         v[:,i] = v[:,i]/vnorm
@@ -406,24 +450,14 @@ def dpss(npts,nw,kspec=None):
 
 def dpss2(npts,nw,nev=None):
     """
+    This is a try to compute the DPSS using the original Thomson
+    approach. It reduces the problem to half the size and inverts
+    independently for the even and odd functions. 
+    This is work in progress and not used. 
+
     Modified from F90 library:
 	German Prieto
 	December 2020
-
-    Calculation of the Discrete Prolate Spheroidal Sequences, and 
-    the correspondent eigenvalues. 
-
-    Slepian, D.     1978  Bell Sys Tech J v57 n5 1371-1430
-    Thomson, D. J.  1982  Proc IEEE v70 n9 1055-1096
-
-    Input:
-       npts    	the number of points in the series
-       nw    	the time-bandwidth product (number of Rayleigh bins)
-       kspec   	Optional, the desired number of tapers def = 2*nw-1
-
-    Output:
-       v     	the eigenvectors (tapers) are returned in v[npts,nev]
-       lamb 	the eigenvalues of the v's
 
     The tapers are the eigenvectors of the tridiagonal matrix sigma(i,j)
     [see Slepian(1978) eq 14 and 25.] They are also the eigenvectors of
@@ -452,11 +486,10 @@ def dpss2(npts,nw,nev=None):
     Also, define DPSS to be positive-standard, meaning vn's always 
     start positive, whether symmetric or not. 
 
-    calls 
-       scipy.signal.windows.dpss
-       dpss_ev
+    Calls
+    -----
+    To do
 
-    ********************************************************************
     """
 
     #-----------------------------------------------------
@@ -587,13 +620,38 @@ def dpss2(npts,nw,nev=None):
 def eigenspec(x,vn,lamb,nfft):
     """
     Calculate eigenspectra using DPSS sequences. 
+    Gets yk's from Thomson (1982). 
+
+    Parameters
+    ----------
+    x : ndarray [npts,0]
+        real vector with the time series
+    vn : ndarray [npts,kspec]	
+        the different tapers computed in dpss
+    lambda : ndarray [kspec]	
+        the eigenvalues of the tapers vn
+    nfft : int		
+        number of frequency points (inc. positive 
+        and negative frequencies)
+
+    Returns
+    -------
+    yk : complex ndarray [kspec,nfft]	
+        complex array with kspec fft's of tapered 
+        data. Regardless of real/complex input data
+        all frequencies are stored. Good for coherence, 
+        deconvolution, etc. 
+    sk : ndarray [kspec,nfft]  
+        real array with kspec eigenspectra
 
     Modified
+    --------
  	German Prieto
 	November 2004
 
-    Python code to get the eigenft's , yk's from Thomson (1982). 
-
+    
+    Notes
+    -----
     Computes eigen-ft's by windowing real data with dpss and taking ffts
     Note that fft is unnormalized and window is such that its sum of 
     squares is one, so that psd=yk**2.
@@ -603,23 +661,9 @@ def eigenspec(x,vn,lamb,nfft):
     applied to the original data (npts long) and the FFT is zero padded
     up to NFFT points. 
  
-    Input:
-	x[npts,0]       real vector with the time series
-        vn[npts,kspec]	the different tapers computed in dpss
-        lambda[kspec]	the eigenvalues of the tapers vn
-        nfft		number of frequency points (inc. positive 
-                        and negative frequencies)
-
-    Output:
-        yk[kspec,nfft]	complex array with kspec fft's of tapered 
-                        data. Regardless of real/complex input data
-                        all frequencies are stored. Good for coherence, 
-                        deconvolution, etc. 
-        sk[kspec,nfft]  real array with kspec eigenspectra of length
-                        nfft.
-
-    calls 
-        scipy.fft.fft
+    Calls
+    -----
+    scipy.fft.fft
 
     """
 
@@ -656,42 +700,54 @@ def eigenspec(x,vn,lamb,nfft):
 
 def adaptspec(yk,sk,lamb,iadapt=0):
     """
-    code to calculate adaptively weighted power spectrum
+    Calculate adaptively weighted power spectrum
     Options for non-adaptive estimates are posible, with optional parameter 
     iadapt, using average of sk's or weighted by eigenvalue. 
 
-    inputs:
-     yk    - complex array containing kspec ffts of length nfft
-     sk    - complex array containing kspec ffts of length nfft
-     lamb  - eigenvalues of tapers
+    Parameters
+    ----------
+    yk : complex ndarray [nfft,kspec]    
+        complex array of kspec eigencoefficients 
+    sk : ndarray [nfft,kspec]    
+        array containing kspe power spectra
+    lamb : ndarray [kspec]
+        eigenvalues of tapers
+    iadapt : int
+        defines methos to use, default = 0
+        0 - adaptive multitaper
+        1 - unweighted, wt =1 for all tapers
+        2 - wt by the eigenvalue of DPSS
 
-    outputs:
-     spec - real vector containing adaptively weighted spectrum
-     se   - real vector containing the number of degrees of freedom
-            for the spectral estimate at each frequency.
-     wt   - real array containing the ne weights for kspec 
-            eigenspectra normalized so that if there is no bias, the
-            weights are unity.
+
+    Returns
+    -------
+    spec : ndarray [nfft]
+        real vector containing adaptively weighted spectrum
+    se : ndarray [nfft]
+        real vector containing the number of degrees of freedom
+        for the spectral estimate at each frequency.
+    wt : ndarray [nfft,kspec]
+        real array containing the ne weights for kspec 
+        eigenspectra normalized so that if there is no bias, the
+        weights are unity.
  
-    Modified 
- 
+    Modified
+    --------
  	German Prieto
 	Aug 2006
-	
 	    Corrected the estimation of the dofs se(1:ne)
-           (set sum(wt**2,dim=2) = 1.), with maximum wt=1.
+        (set sum(wt**2,dim=2) = 1.), with maximum wt=1.
 
-
-	German Prieto
-        October 2007	
+    German Prieto
+    October 2007	
 	   Added the an additional subroutine noadaptspec to 
-           calculate a simple non-adaptive multitaper spectrum.
-           This can be used in transfer functions and deconvolution, 
-           where adaptive methods might not be necesary. 
-	*******************************************************************
+        calculate a simple non-adaptive multitaper spectrum.
+        This can be used in transfer functions and deconvolution, 
+        where adaptive methods might not be necesary. 
 
-
-    calls nothing
+    Calls
+    -----
+    nothing
 
     """
 
@@ -816,29 +872,39 @@ def jackspec(spec,sk,wt,se):
     """
     code to calculate adaptively weighted jackknifed 95% confidence limits
 
-    inputs:
-      spec  - real vector containing adaptively weighted spectrum
-      sk    - real array containing kspec ffts of length nfft
-      wt    - real array containing the ne weights for kspec 
-              eigenspectra normalized so that if there is no bias, the
-              weights are unity.
-      se    - real vector containing the number of degrees of freedom
-              for the spectral estimate at each frequency.
+    Parameters
+    ----------
+    spec : ndarray [nfft]
+        real vector containing adaptively weighted spectrum
+    sk : ndarray [nfft,kspec]
+        array with kth power spectra 
+    wt : ndarray [nfft,kspec]
+        real array containing the ne weights for kspec 
+        eigenspectra normalized so that if there is no bias, the
+        weights are unity.
+    se : ndarray [nfft]
+        real vector containing the number of degrees of freedom
+        for the spectral estimate at each frequency.
      
-    outputs:
-      spec_ci  - real array of jackknife error estimates, with 5 and 95%
-                 confidence intervals of the spectrum.
+    Returns
+    -------
+    spec_ci : ndarray [nfft,2]
+        real array of jackknife error estimates, with 5 and 95%
+        confidence intervals of the spectrum.
 
-    calls 
-        scipy.stats.t.ppf
+    Calls
+    -----
+    scipy.stats.t.ppf
 
     Modified
-        German Prieto
-        Aug 2006
+    --------
+    German Prieto
+    Aug 2006
 	
-        German Prieto
-        March 2007
-        Changed the Jackknife to be more efficient.
+    German Prieto
+    March 2007
+    Changed the Jackknife to be more efficient.
+
     """
     #------------------------------------------------------
     # Get sizes and define matrices
@@ -940,53 +1006,76 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
     The first 2 derivatives of the spectrum are estimated and the 
     bias associated with curvature (2nd derivative) is reduced. 
 
+    Function to calculate the Quadratic Spectrum using the method 
+    developed by Prieto et al. (2007).   
+    The first 2 derivatives of the spectrum are estimated and the 
+    bias associated with curvature (2nd derivative) is reduced. 
+
     Calculate the Stationary Inverse Theory Spectrum.
     Basically, compute the spectrum inside the innerband. 
   
-    This approach is very similar to 
-    D.J. Thomson (1990).
-  
-    These subroutine follows the paper:
+    This approach is very similar to D.J. Thomson (1990).
+
+    Parameters
+    ----------
+    spec : ndarray [nfft,0]    
+        the adaptive multitaper spectrum (so far)
+    yk : ndarrau, complex [npts,kspec]  
+        multitaper eigencoefficients, complex
+    wt : ndarray [nf,kspec]	
+        the weights of the different coefficients. 
+  		input is the original multitaper weights, 
+  		from the Thomson adaptive weighting. 
+  	vn : ndarray [npts,kspec]  
+        the Slepian sequences
+    lambda : ndarray [kspec]   
+        the eigenvalues of the Slepian sequences
+    nw : float             
+        The time-bandwisth product
+
+    Returns
+    -------
+    qispec : ndarray [nfft,0]
+        the QI spectrum estimate
+    ds : ndarray [nfft,0]	
+        the estimate of the first derivative
+    dds : ndarray [nfft,0]	
+        the estimate of the second derivative
+
+    References
+    ----------
     G. A. Prieto, R. L. Parker, D. J. Thomson, F. L. Vernon, 
     and R. L. Graham (2007), Reducing the bias of multitaper 
     spectrum estimates,  Geophys. J. Int., 171, 1269-1281. 
     doi: 10.1111/j.1365-246X.2007.03592.x.
-  
-  
-    NOTE:
-  
+   
+    Notes
+    -----
     In here I have made the Chebyshev polinomials unitless, 
     meaning that the associated parameters ALL have units 
     of the PSD and need to be normalized by 1/W for \alpha_1, 
-    1/W**2 for \alpha_2, etc., 
-  
-  
-    INPUT
-        spec[nfft,0]    the adaptive spectrum (so far)
-        yk[npts,kspec]  multitaper eigencoefficients, complex
-  	wt[nf,kspec]	the weights of the different coefficients. 
-  			input is the original multitaper weights, 
-  			from the Thomson adaptive weighting. 
-  	vn[npts,kspec]  the slepian sequences
-        lambda(kspec]   the eigenvalues of the Slepian sequences
-        nw              The time-bandwisth product
-  	
-    OUTPUT
-  	qispec[nfft,0]	the QI spectrum
-  	ds[nfft,0]	the estimate of the first derivative
-  	dds[nfft,0]	the estimate of the second derivative
-  
-    MODIFIED
-  	German Prieto
-  	June 5, 2009
+    1/W**2 for \alpha_2, etc.
+
+    Modified
+    --------
+    Nov 2021 (German A Prieto)
+        Major adjustment in the inverse problem steps. 
+        Now, the constant term is first inverted for, 
+        and then the 1st and 2nd derivative so that we 
+        obtain an independent 2nd derivative.
+  	June 5, 2009 (German A. Prieto)
   		Major change, saving some important
   		values so that if the subroutine is called 
   		more than once, with similar values, many of
   		the variables are not calculated again, making
   		the code run much faster. 
-    """
 
-    import scipy.optimize as optim
+    Calls
+    -----
+    scipy.optimize.nnls, scipy.linalg.qr,
+    scipy.linalg.lstsq
+
+    """
 
     npts  = np.shape(vn)[0] 
     kspec = np.shape(vn)[1]
@@ -1021,12 +1110,6 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
             om = 2.0*np.pi*xi[i]
             ct,st = sft(vn[:,k],om) 
             Vj[i,k] = 1.0/np.sqrt(lamb[k])*complex(ct,st)
-
-#    fig = plt.figure()
-#    ax1 = fig.add_subplot(211)
-#    ax1.plot(np.real(Vj))
-#    ax2 = fig.add_subplot(212)
-#    ax2.plot(np.imag(Vj))
 
     #----------------------------------------------------------------
     # Create the vectorized Cjk matrix and Pjk matrix { Vj Vk* }
@@ -1086,8 +1169,6 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
     Ri,res,rnk,s = scipy.linalg.lstsq(R,Leye)
     covb = np.real(np.matmul(Ri,np.transpose(Ri))) 
 
-#    print(h1)
-
     for i in range(nfft):
        Cjk[:,0]    = C[:,i]
 #       hmodel,res,rnk,s = scipy.linalg.lstsq(hk,Cjk)
@@ -1099,9 +1180,7 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        #---------------------------------------------
        cte_out  = optim.nnls(np.real(h1), 
                              np.real(Cjk[:,0]))[0]
-       #print('cte_out ', cte_out)
        cte2[i]  = np.real(cte_out) 
-#       print(np.shape(h1),np.shape(cte2),np.shape(Cjk))
        pred = h1*cte2[i]
        Cjk2 = Cjk-pred
        #---------------------------------------------
@@ -1113,30 +1192,12 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        slope[i] = -np.real(hmodel[1])
        quad[i]  = np.real(hmodel[2])
 
-#       print(i+1, spec[i,0],cte[i], cte2[i])
-
        pred = np.matmul(hk,np.real(hmodel))
        sigma2[i] = np.sum(np.abs(Cjk-pred)**2)/(L-nh) 
 
        cte_var[i]   = sigma2[i]*covb[0,0]
        slope_var[i] = sigma2[i]*covb[1,1]
        quad_var[i]  = sigma2[i]*covb[2,2]
-
-#       print(spec[i],cte[i], slope[i]/bp, quad[i]/bp**2)
-
-#    fig = plt.figure()
-#    plt.plot(cte)
-#    plt.plot(cte2)
-#    plt.plot(spec)
-#    plt.plot(quad)
-#    plt.xlim(0,1000) 
-#    fig = plt.figure()
-#    plt.plot(cte)
-#    plt.plot(cte2)
-#    plt.plot(slope)
-#    plt.plot(quad)
-#    plt.xlim(0,1000)    
-#    plt.show()
 
     slope = slope / (bp)
     quad  = quad  / (bp**2)
@@ -1173,25 +1234,27 @@ def ftest(vn,yk):
     """
     Performs the F test for a line component
   
-    Modiefied 
-  	German Prieto
-  	April 2006
-  
     Compute F-test for single spectral line components
     at the frequency bins given by the mtspec routines. 
     
-    INPUT
-  	vn	Slepian sequences real
-  		[npts,kspec]
-  	yk	kspec fft's of tapered data series 
-  		[nfft,kspec], complex
-  	
-    OUTPUT
-  	F[nfft]	vector of f-test values, real
-  	p[nfft]	vector with probability of line
+    Parameters
+    ----------
+    vn : ndarray [npts,kspec]
+        Slepian sequences real
+    yk : ndarray, complex [nfft,kspec]
+        multitaper eigencoefficients, complex
+        kspec fft's of tapered data series 
   
-    calls 
-        scipy.stats.f.cdf
+    Returns
+    -------
+  	F : ndarray [nfft]
+        vector of f-test values, real
+  	p : ndarray [nfft]
+        vector with probability of line component
+
+    Calls 
+    -----
+        scipy.stats.f.cdf, scipy.stats.f.cdf
     """
 
     npts  = np.shape(vn)[0]
@@ -1252,26 +1315,37 @@ def ftest(vn,yk):
 def yk_reshape(yk_in,vn,p=None,fcrit=0.95):  
     """
     reshape the yk's based on the F-test of line compenents
-
-  
-    Modified
-  	German Prieto
-  	April 2006
   
     Reshape eigenft's around significant spectral lines
     The "significant" means above fcritical probability (def=0.95)
     If probability is large at neighbouring frequencies, code will 
     only remove the largest probability energy. 
   
-    INPUT
-    	yk[nfft,kspec] - eigenft's
-        vn[npts,kspec] - DPSS sequences
+    Parameters
+    ----------
+    yk : ndarray complex [nfft,kspec] 
+        eigenft's
+    vn : ndarray [npts,kspec] 
+        DPSS sequences
+    p : ndarray optional [nfft] 
+        F-test probabilities to find fcritical
+        In None, it will be calculated
+    fcrit : float optional
+        Probability value over which to reshape, default = 0.95
 
-    OPTIONAL INPUT
-        p[nfft] - F-test probabilities to find fcritical
-        fcrit   - Probability value over which to reshape (def - 0.95)
+    Returns
+    -------
+    yk : ndarray, complex [nfft,kspec]
+        Reshaped eigenft's 
+    sline : ndarray [nfft]
+        Power spetrum of line components only
 
-    calls 
+    Modified
+  	--------
+  	April 2006 (German A. Prieto)
+
+    Calls
+    -----
        ftest - if P is not present
        scipy.fft.fft
  
@@ -1372,11 +1446,15 @@ def wt2dof(wt):
     Calculate the degrees of freedom of the multitaper based on the 
     weights of the different tapers.
 
-    INPUT 
-        wt[nfft,kspec] - weights of the tapers at each frequency
+    Parameters
+    ----------
+    wt : ndarray [nfft,kspec] 
+        weights of the tapers at each frequency
 
-    OUTPUT
-        se[nfft] - degrees of freedom at each frequency
+    Returns
+    -------
+    se : ndarray [nfft] 
+        degrees of freedom at each frequency
 
     """
     
@@ -1406,27 +1484,40 @@ def wt2dof(wt):
 
 def df_spec(x,y=None,fmin=None,fmax=None):
     """
-    Dual frequency spectrum, using two MTSPEC classes to compute. 
+    Dual frequency spectrum using one/two MTSPEC classes. 
     For now, only positive frequencies are studied
   
     Construct the dual-frequency spectrum from the yk's and the 
     weights of the usual multitaper spectrum estimation. 
-    The dual-frequency spectrum is saved in a file, needed for 
-    long time series where computer memory breaks down.
   
-    INPUT
-  	x      - MTSPEC class, with time series and yk's
-        y      - optional, similar to x for a second time series
+    Parameters
+    ----------
+    x : MTSpec class
+        variable with the multitaper information (yk's)
+    y : MTSpec class, optional
+        similar to x for a second time series
+        if y is None, auto-dual frequency is calculated.
+    fmin : float, optional
+        minimum frequency to calculate the DF spectrum
+    fmax : float, optional
+        minimum frequency to calculate the DF spectrum
 
-    Note: both x and y need the same parameters (npts, kspec, etc.)
   
-    OUTPUT
-  	df_spec[nf,nf]	The full complex dual-freq cross-spectra
-  			Not normalized. 
-  	df_cohe[nf,nf]  MSC, dual-freq coherence (nf,nf) matrix
-  	df_phase[nf,nf]	dual-freq phase
-  
+    Returns
+    -------
+    df_spec : ndarray complex, 2D (nf,nf)
+        the complex dual-frequency cross-spectrum. Not normalized
+    df_cohe : ndarray, 2D (nf,nf)
+        MSC, dual-freq coherence matrix. Normalized (0.0,1.0)
+    df_phase : ndarray, 2D (nf,nf)
+        the dual-frequency phase
+
+    Notes
+    -----
+    both x and y need the same parameters (npts, kspec, etc.)
+
     Modified
+    --------
   	German Prieto
   	September 2005
   
@@ -1434,8 +1525,10 @@ def df_spec(x,y=None,fmin=None,fmax=None):
   	September 2007
   	Slight rewrite to adjust to newer mtspec codes.
     
-    calls
+    Calls
+    -----
   	Nothing
+
     """
 
     if (y is None):
@@ -1513,19 +1606,30 @@ def df_spec(x,y=None,fmin=None,fmax=None):
 
 def sft(x,om):
     """
-    Modified
-	German Prieto
-	November 2004
-
-    calculates fourier transform of real sequence x(i),i=1,...n
-    at angular frequency om normalized so that nyquist=pi. the sine
-    transform is returned in st and the cosine transform in ct.
+    calculates the (slow) fourier transform of real 
+    sequence x(i),i=1,...n at angular frequency om normalized 
+    so that nyquist=pi. the sine transform is returned in st and 
+    the cosine transform in ct.
     algorithm is that of goertzal with modifications by
     gentleman, comp.j. 1969
     transform is not normalized
     to normalize one-sided ft, divide by sqrt(data length)
     for positive om, the ft is defined as ct-(0.,1.)st or like slatec
     cfftf
+
+    Parameters
+    ----------
+    x : ndarray (n,) 
+        time sequence x[0],x[1],...
+    om : float
+        angular frequency of interest,
+        normalized such that Nyq = pi
+
+    Modified
+    --------
+	German Prieto
+	November 2004
+
     """ 
 
     n = np.shape(x)[0]
@@ -1595,21 +1699,32 @@ def squick(nptwo,fx,nf,ntap=None,kopt=None):
     FFT of the sine tapered signal. 
     The FFT should be performed previous to the call. 
     
-    INPUT
-  	nptwo		The twice signal length (2*npts)
-  	fx		The FFT of the signal (twice length)
-  	nf		Number of frequency points for spec
-  	ktop		if > 0  Constant value to be used
-  			if <= 0 Use the kopt array instead
+    Parameters
+    ----------
+    nptwo : float
+        The twice signal length (2*npts)
+    fx : ndarray, clomplex		
+        The FFT of the signal (twice length)
+    nf : int
+        Number of frequency points for spec
+    ntap : int, optional
+        Constant number of tapers to average from
+        if None, kopt is used.
+        if > 0  Constant value to be used
+  		if <= 0 Use the kopt array instead
+   ktop : ndarray, int [nf]
+        array of integers, with the number of tapers
+        at each frequency. 
    
-    OUTPUT
-  	spec(nf)	the spectral estimate
+    Returns
+    -------
+    spec : ndarray (nf,)	
+        the spectral estimate
   
-    INPUT/OUTPUT
-  	kopt		number of tapers per frequency. 
-  			if ktop>0 uses a constant value.
-  
+    References
+    ----------
     Based on the sine multitaper code of R. L. Parker.
+
     """
 
     spec = np.zeros(nf,dtype=float)
@@ -1671,21 +1786,37 @@ def squick2(nptwo,fx,nf,ntap=None,kopt=None):
     FT[sin(q*n)*x(n)] from F[x(n)], that is constructs the 
     FFT of the sine tapered signal. 
     The FFT should be performed previous to the call. 
-    
-    INPUT
-  	nptwo		The twice signal length (2*npts)
-  	fx[nptwo,2]	The FFT of the two signals (twice length)
-  	nf		Number of frequency points for spec
-  	ntap		if > 0  Constant value to be used
-                        if not existing or <0, kopt used
-        kopt[nf]        number of tapers for each freq
+
+    Parameters
+    ----------
+    nptwo : float
+        The twice signal length (2*npts)
+    fx : ndarray, complex [nptwo,2]		
+        The FFT of the two signals (twice length)
+    nf : int
+        Number of frequency points for spec
+    ntap : int, optional```
+        Constant number of tapers to average from
+        if > 0  Constant value to be used
+        if None kopt used
+  		if <= 0 Use the kopt array instead
+   kopt : ndarray, int [nf]
+        array of integers, with the number of tapers
+        at each frequency. 
    
+    Returns
+    -------
+    spec : ndarray (nf,4)	
+        the spectral estimate
+  
+
     OUTPUT
-  	sxy[nf,4]	the spectral estimate
+    sxy : ndarray, complex [nf,4]	
+        the spectral estimates (first 2 columns)
+        and the cross spectral estiamtes (last 2 columns)
   
-    INPUT/OUTPUT
-  	kopt[nf]	number of tapers per frequency. 
-  
+    References
+    ----------
     Based on the sine multitaper code of R. L. Parker.
     """
 
@@ -1748,28 +1879,45 @@ def squick2(nptwo,fx,nf,ntap=None,kopt=None):
 
 def sadapt(nptwo,fx,nf,df,initap,ntimes,fact):
     """
-    Performs the adaptive spectral estimation
+    Performs the (sine multitaper) adaptive spectral estimation
     From a basic pilot estimate, computes S" to be used
     in (13) of Riedel and Sidorenko (1995) for the 
     MSE spectrum.
   
-    INPUT
-  	nptwo		The twice signal length (2*npts)
-  	fx		The FFT of the signal (twice length)
-  	nf		Number of frequency points for spec
-        df		Freq sampling
-  	initap		Number of tapers to use for pilot estimate
-  			Later we can add the mtspec result as test
-  	ntimes		number of iterations for estimate
-        fact		degree of smoothing (def = 1.0)
+    Parameters
+    ----------
+    nptwo :	int
+        The twice signal length (2*npts)
+    fx : ndarray, complex [nptwo]		
+        The FFT of the two signals (twice length)
+    nf : int
+        Number of frequency points for spec
+    df : float
+        Freq sampling
+    initap : int
+        Number of tapers to use for pilot estimate
+  		Later we can add the spec result as test
+    ntimes : int		
+        number of iterations for estimate
+    fact : float		
+        degree of smoothing (def = 1.0)
    
-    OUTPUT
-  	spec[nf]	the spectral estimate
-  	kopt[nf]	number of tapers per frequency. 
-  
+    Returns
+    -------
+
+    spec : ndarray (nf)	
+        the spectral estimate
+    kopt : ndarray, int [nf]
+        the number of tapers at each frequency. 
+   
+    References
+    ----------
     Based on the sine multitaper code of R. L. Parker.
   	
-    calls squick, north, curb
+    Calls
+    -----
+    squick, north, curb
+
     """
 
     #------------------------------------------------------
@@ -1851,22 +1999,51 @@ def sadapt2(nptwo,fx,nf,df,initap,ntimes,fact):
     From a basic pilot estimate, computes S" to be used
     in (13) of Riedel and Sidorenko (1995) for the 
     MSE spectrum.
-  
-    INPUT
-  	nptwo		The twice signal length (2*npts)
-  	fx[nptwo,2]	The FFT of the signal (twice length)
-  	nf		Number of frequency points for spec
-  	df		Freq sampling
-  	initap		Number of tapers to use for pilot estimate
-  			Later we can add the mtspec result as test
-  	ntimes		number of iterations for estimate
-        fact		degree of smoothing (def = 1.0)
+
+    Parameters
+    ----------
+    nptwo :	int
+        The twice signal length (2*npts)
+    fx : ndarray, complex [nptwo,2]		
+        The FFT of the two signals (twice length)
+    nf : int
+        Number of frequency points for spec
+    df : float
+        Freq sampling
+    initap : int
+        Number of tapers to use for pilot estimate
+  		Later we can add the spec result as test
+    ntimes : int		
+        number of iterations for estimate
+    fact : float		
+        degree of smoothing (def = 1.0)
    
-    OUTPUT
-  	sxy[nf,4]	the spectral estimates and coherence, phase
-  	kopt[nf]	number of tapers per frequency. 
+    Returns
+    -------
+
+    spec : ndarray (nf,4)	
+        the spectral estimate
+    kopt : ndarray, int [nf]
+        the number of tapers at each frequency. 
+   
+    References
+    ----------
+    Based on the sine multitaper code of R. L. Parker.
   	
-    calls squick2, orthog, vvv
+    Calls
+    -----
+    squick, north, curb
+
+    OUTPUT
+    sxy : ndarray, complex [nf,4]	
+        the spectral estimates and coherence, phase
+    kopt: ndarray, int [nf]	
+        number of tapers per frequency. 
+  	
+    Calls
+    -----
+    squick2, orthog, vvv
+
     """
 
     #------------------------------------------------------
@@ -1951,8 +2128,15 @@ def north(n, i1, i2, s):
     """
     Performs LS fit to s by
     a degree-two polynomial in an orthogonal basis.
-    Returns ds = estimate of 1st derivative  ds/dn  at center of record
-    Returns dds = estimate of 2nd derivative
+    Function to be run with the Sine multitaper codes.
+
+    Returns
+    -------
+    ds : float
+        estimate of 1st derivative  ds/dn  at center of record
+    dds : float
+        estimate of 2nd derivative
+
     """
 
     L     = i2 - i1 + 1
@@ -1995,17 +2179,22 @@ def north(n, i1, i2, s):
 def curb(n, v_in):
 
     """
-      Takes n-long vector v[n] and rewrites it so that all points lie below
-      the piece-wise linear function v(k) + abs(j-k), where v(k)
-      is a local minimum in the original v.
-      Effectively clips strong peaks and keeps slopes under 1 in
-      magnitude.
+    Takes n-long vector v[n] and rewrites it so that all points lie below
+    the piece-wise linear function v(k) + abs(j-k), where v(k)
+    is a local minimum in the original v.
+    Effectively clips strong peaks and keeps slopes under 1 in
+    magnitude.
     
-    INPUT 
-       v_in[n] - vector to be clipped, n-long
+    Parameters
+    ----------
+    v_in : ndarray [n] 
+        vector to be clipped, n-long
 
-    OUTPUT 
-       v[n] - clipped vector
+    Returns
+    -------
+    v : ndarray [n] 
+        clipped vector
+
     """
 
     n = np.shape(v_in)[0]
@@ -2050,15 +2239,19 @@ def get_data(fname):
     """
     Utility function to download the data from the Zenodo repository
     with the direct URL path (fixed). 
-    Input:
-        fname - filename of the data to download
-    Output:
-        data - numpy array with the downloaded data
-
-    In case of error, data = 0 is returned
-    """
     
-    import numpy as np
+    Parameters
+    ----------
+    fname : char
+        filename of the data to download
+    
+    Returns
+    -------
+    data : ndarray
+        numpy array with the downloaded data
+        In case of error, data = 0 is returned
+
+    """
     
     if (fname.find("v22")>-1):
         url = 'https://zenodo.org/record/6025794/files/v22_174_series.dat?download=1'

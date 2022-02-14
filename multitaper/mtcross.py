@@ -7,6 +7,24 @@ Contains:
    TO DO 
       df_spec
       wv_spec
+
+Module with routines for bi-variate multitaper spectrum estimation.
+Contains the main MTCross and SineCross classes where the estimates 
+are made and stored. 
+
+It takes univariate classes MTSpec and MTSine for estimating coherence
+tranfer functions, etc. 
+
+See module mtspec for univariate problems
+
+Classes:
+
+    MTCross   - A class to represent Thomson's multitaper cross-spectra
+    SineCross - A class to represent Sine Multitaper cross-spectra
+
+Functions:
+    None
+
 """
 
 #-----------------------------------------------------
@@ -17,16 +35,124 @@ import numpy as np
 import scipy
 from scipy import signal
 import scipy.linalg      as linalg
-import matplotlib.pyplot as plt
 import multitaper.utils      as utils 
-import multitaper.mtspec     as mtspec
+import multitaper.mtspec     as spec
 
 class MTCross:
 
+    """
+    MTCross class
+        A class for bi-variate Thomson multitaper estimates
+
+    Attibutes
+    ---------
+
+    - Parameters
+    npts   : int
+        number of points of time series
+    nfft   : int
+        number of points of FFT. Dafault adds padding. 
+    nw     : flaot
+        time-bandwidth product
+    kspec  : int
+        number of tapers to use
+
+    - Time series
+    x      : ndarray [npts]
+        time series
+    xvar   : float
+        variance of time series
+    dt     : float
+        sampling interval
+
+    - Frequency vector
+    nf     : int
+        number of unique frequency points of spectral 
+        estimate, assuming real time series
+    freq   : ndarray [nfft]
+        frequency vector in Hz
+    df     : float
+        frequncy sampling interval
+
+    - Method
+    iadapt : int
+        defines methos to use
+        0 - adaptive multitaper
+        1 - unweighted, wt =1 for all tapers
+        2 - wt by the eigenvalue of DPSS
+
+    - Spectral estimates
+    Sxx : ndarray [nfft]
+        Power spectrum of x time series
+    Syy : ndarray [nfft]
+        Power spectrum of y time series
+    Sxy : ndarray, complex [nfft]
+        Coss-spectrum of x, y series
+    cohe  : ndarray [nfft]
+        MSC, freq coherence. Normalized (0.0,1.0)
+    phase : ndarray [nfft]
+        the phase of the cross-spectrum    
+    cohy : ndarray, complex [nfft]
+        the complex coherency, normalized cross-spectrum 
+    trf  : ndarray, compolex [nfft]
+        the transfer function Sxy/(Syy_wl), with water-level optional
+    se : ndarray [nfft,1] 
+        degrees of freedom of estimate
+    wt : ndarray [nfft,kspec]
+        weights for each eigencoefficient at each frequency
+
+    Methods
+    -------
+
+    init      : Constructor of the MTCross class
+    mt_deconv : Perform the deconvolution from the self.trf, by iFFT
+    mt_corr   : compute time-domain via iFFT of cross-spectrum, 
+                coherency, and transfer function
+
+    Modified
+    --------
+	German Prieto
+	January 2022
+
+    """
+
     def __init__(self,x,y,nw=4,kspec=0,dt=1.0,nfft=0,iadapt=0,wl=0.0):
         """
-        put some notes here. 
-        Driver for multivariate MT spectrum analysis
+        The constructor of the MTCross class.
+        It performs main steps in bi-variate multitaper estimation, 
+        including cross-spectrum, coherency and transfer function.
+        MTCross class variable with attributes described above. 
+
+        Parameters
+        ----------
+        x : MTSpec class, or ndarray [npts,]
+            Time series signal x.
+            If ndarray, the MTSpec class is created.
+        y : MTSpec class, or ndarray [npts,]
+            Time series signal x
+            If ndarray, the MTSpec class is created.
+        nw : float, optional
+            time bandwidth product, default = 4
+            Only needed if x,y are ndarray
+        kspec : int, optional
+            number of tapers, default = 2*nw-1
+            Only needed if x,y are ndarray
+        dt : float, optional
+            sampling interval of x, default = 1.0
+            Only needed if x,y are ndarray
+        nfft : int, optional
+            number of frequency points for FFT, allowing for padding
+            default = 2*npts+1
+            Only needed if x,y are ndarray
+        iadapt : int, optional
+            defines methos to use, default = 0
+            0 - adaptive multitaper
+            1 - unweighted, wt =1 for all tapers
+            2 - wt by the eigenvalue of DPSS
+        wl : float, optional
+            water-level for stabilizing deconvolution (transfer function).
+            defined as proportion of mean power of Syy
+
         """
         
         #-----------------------------------------------------
@@ -59,8 +185,8 @@ class MTCross:
             if (nx>1 or ny>1):
                 raise ValueError("Arrays must be a single column")
 
-            x = mtspec.mtspec(x,nw,kspec,dt,nfft,iadapt=iadapt)
-            y = mtspec.mtspec(y,nw,kspec,dt,nfft,iadapt=iadapt,vn=x.vn,lamb=x.lamb)
+            x = spec.MTSpec(x,nw,kspec,dt,nfft,iadapt=iadapt)
+            y = spec.MTSpec(y,nw,kspec,dt,nfft,iadapt=iadapt,vn=x.vn,lamb=x.lamb)
 
         #------------------------------------------------------------
         # Now, check MTSPEC variables have same sizes
@@ -121,7 +247,6 @@ class MTCross:
         phase = np.zeros((nfft,1),dtype=float)
         
         w_lev = wl*np.mean(Syy[:,0])
-        #print(np.mean(Syy[:,0]),w_lev)
         for i in range(nfft):
             phase[i,0] = np.arctan2(np.imag(Sxy[i,0]),np.real(Sxy[i,0])) 
             cohe[i,0]  = np.abs(Sxy[i,0])**2 / (Sxx[i,0]*Syy[i,0])
@@ -152,8 +277,9 @@ class MTCross:
         self.trf    = trf
         self.phase  = phase
         self.se     = se
+        self.wt     = wt
 
-        del Sxx, Syy, Sxy, cohe, phase, se
+        del Sxx, Syy, Sxy, cohe, phase, se, wt
 
     #-------------------------------------------------------------------------
     # Finished INIT mvspec
@@ -170,8 +296,36 @@ class MTCross:
     def mt_deconv(self): 
 
         """
-        Compute the transfer function between two signals (cross spetrum
-        already pre-computed
+        Generate a deconvolution between two time series, returning
+        the time-domain signal.
+        
+        MTCross has already pre-computed the cross-spectrum and 
+        the transfer function. 
+
+        Parameters
+        ----------
+        self : MTCross class
+
+        Returns
+        -------
+        dfun : ndarray [nfft]
+            time domain of the transfer function. 
+            delay time t=0 in centered in the middle.
+
+        References
+        ----------
+        The code more or less follows the paper
+        Receiver Functions from multiple-taper spectral corre-
+        lation estimates
+        J. Park and V. Levin., BSSA 90#6 1507-1520
+
+        It also uses the code based on dual frequency I created in
+        GA Prieto, Vernon, FL , Masters, G, and Thomson, DJ (2005), 
+        Multitaper Wigner-Ville Spectrum for Detecting Dispersive 
+        Signals from Earthquake Records, Proceedings of the 
+        Thirty-Ninth Asilomar Conference on Signals, Systems, and 
+        Computers, Pacific Grove, CA., pp 938-941. 
+
         """
 
         nfft  = self.nfft
@@ -184,25 +338,47 @@ class MTCross:
 
         return dfun 
 
-    #----------------------------------------------------------------
-    # The three correlation-based estimates in the time domain
-    #    correlation (cross-spectrum)
-    #    deconvolution (transfer function)
-    #    norm correlation (coherency)
-    # Correlation:
-    #    Sxy = Sx*conj(Sy)
-    # Deconvolution:
-    #    Sxy/Sy = Sx*conj(Sy)/Sy^2
-    # Coherency
-    #    Sxy/sqrt(Sx*Sy)
-    #
-    #----------------------------------------------------------------
 
     def mt_corr(self): 
 
         """
-        Compute the time domain transfer function between two signals (cross spetrum
-        already pre-computed
+        Compute time-domain via iFFT of cross-spectrum, 
+        coherency, and transfer function
+ 
+        Cross spectrum, coherency and transfer function 
+        already pre-computed in self.
+
+        MTCross has already pre-computed the cross-spectrum and 
+        the coherency and transfer function. 
+
+        Parameters
+        ----------
+        self : MTCross class
+
+        Returns
+        -------
+        xcorr : ndarray [nfft]
+            time domain of the transfer function. 
+        dcohy : ndarray [nfft]
+            time domain of the transfer function. 
+        dfun : ndarray [nfft]
+            time domain of the transfer function. 
+            
+        Delay time t=0 in centered in the middle.
+
+        Notes
+        -----
+        The three correlation-based estimates in the time domain
+            correlation (cross-spectrum)
+            deconvolution (transfer function)
+            norm correlation (coherency)
+        Correlation:
+            Sxy = Sx*conj(Sy)
+        Deconvolution:
+            Sxy/Sy = Sx*conj(Sy)/Sy^2
+        Coherency
+            Sxy/sqrt(Sx*Sy)
+        
         """
 
         nfft = self.nfft
@@ -229,11 +405,121 @@ class MTCross:
 
 class SineCross:
 
+    """
+    SineCross class
+        A class for bi-variate Sine multitaper estimates
+
+    Attibutes
+    ---------
+
+    - Parameters
+    npts   : int
+        number of points of time series
+    nfft   : int
+        number of points of FFT. nfft = 2*npts
+
+    - Time series
+    x      : ndarray [npts]
+        time series x
+    xvar   : float
+        variance of x time series
+    y      : ndarray [npts]
+        time series y
+    yvar   : float
+        variance of y time series
+    dt     : float
+        sampling interval
+
+    - Frequency vector
+    nf     : int
+        number of unique frequency points of spectral 
+        estimate, assuming real time series
+    freq   : ndarray [nfft]
+        frequency vector in Hz
+    df     : float
+        frequncy sampling interval
+
+    - Method
+    ntap   : int
+        fixed number of tapers
+        if ntap<0, use kopt
+    kopt   : ndarray [nfft,1] 
+        number of tapers at each frequency
+    ntimes : int
+        number of max iterations to perform
+    ireal  : int
+        0 - real time series
+        1 - complex time series
+
+    - Spectral estimates
+    cspec : ndarray, complex [nfft]
+        Coss-spectrum of x, y series
+    sxy : ndarray, complex [nfft]
+        Coss-spectrum of x, y series
+    cohe  : ndarray [nfft]
+        MSC, freq coherence. Normalized (0.0,1.0)
+    phase : ndarray [nfft]
+        the phase of the cross-spectrum    
+    gain : ndarray [nfft]
+        the gain for the two spectra    
+    cohy : ndarray, complex [nfft]
+        the complex coherency, normalized cross-spectrum 
+    trf  : ndarray, compolex [nfft]
+        the transfer function Sxy/(Syy_wl), with water-level optional
+    se : ndarray [nfft,1] 
+        degrees of freedom of estimate
+    conf : ndarray [nfft,]
+        confidence in cross-spectrum at each frequency
+
+    Methods
+    -------
+
+    init      : Constructor of the SineCross class
+    mt_deconv : Perform the deconvolution from the self.trf, by iFFT
+    mt_corr   : compute time-domain via iFFT of cross-spectrum, 
+                coherency, and transfer function
+
+    Modified
+    --------
+	German Prieto
+	January 2022
+
+    """
+
+
     def __init__(self,x,y,ntap=0,ntimes=0,fact=1.0,dt=1.0,p=0.95):
 
         """
-        put some notes here. 
-        Driver for multivariate SINE Cross spectrum analysis
+        Performs the coherence and cross-spectrum estimation 
+        by the sine multitaper method.
+
+        References
+        ----------
+        Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
+
+        Based on Bob Parker psd.f and cross.f codes. Most of the comments 
+        come from his documentation as well.
+
+        Parameters
+        ----------
+
+        x : MTSine class, or ndarray [npts,]
+            Time series signal x.
+            If ndarray, the MTSpec class is created.
+        y : MTSine class, or ndarray [npts,]
+            Time series signal x
+            If ndarray, the MTSpec class is created.
+      	ntap : int, optional
+            constant number of tapers (def = 0)
+      	ntimes : int, optional
+            number of iterations to perform
+      	fact : float, optional
+            degree of smoothing (def = 1.)
+       	dt : float, optional
+            sampling interval of time series
+        p : float, optional
+            proportion for confidence intervale estimation
+
         """
         
         #-----------------------------------------------------
@@ -307,8 +593,8 @@ class SineCross:
 
         self.x      = x
         self.xvar   = xvar
-        self.x      = y
-        self.xvar   = yvar
+        self.y      = y
+        self.yvar   = yvar
         self.freq   = freq
         self.dt     = dt
         self.df     = df
@@ -398,8 +684,22 @@ class SineCross:
     def mt_deconv(self): 
 
         """
-        Compute the transfer function between two signals (cross spetrum
-        already pre-computed
+        Generate a deconvolution between two time series, returning
+        the time-domain signal.
+        
+        SineCross has already pre-computed the cross-spectrum and 
+        the transfer function. 
+
+        Parameters
+        ----------
+        self : SineCross class
+
+        Returns
+        -------
+        dfun : ndarray [nfft]
+            time domain of the transfer function. 
+            delay time t=0 in centered in the middle.
+
         """
 
         nf    = self.nf
@@ -420,25 +720,47 @@ class SineCross:
 
         return dfun 
 
-    #----------------------------------------------------------------
-    # The three correlation-based estimates in the time domain
-    #    correlation (cross-spectrum)
-    #    deconvolution (transfer function)
-    #    norm correlation (coherency)
-    # Correlation:
-    #    Sxy = Sx*conj(Sy)
-    # Deconvolution:
-    #    Sxy/Sy = Sx*conj(Sy)/Sy^2
-    # Coherency
-    #    Sxy/sqrt(Sx*Sy)
-    #
-    #----------------------------------------------------------------
-
     def mt_corr(self): 
 
+        
         """
-        Compute the time domain transfer function between two signals (cross spetrum
-        already pre-computed
+        Compute time-domain via iFFT of cross-spectrum, 
+        coherency, and transfer function
+ 
+        Cross spectrum, coherency and transfer function 
+        already pre-computed in self.
+
+        SineCross has already pre-computed the cross-spectrum and 
+        the coherency and transfer function. 
+
+        Parameters
+        ----------
+        self : SineCross class
+
+        Returns
+        -------
+        xcorr : ndarray [nfft]
+            time domain of the transfer function. 
+        dcohy : ndarray [nfft]
+            time domain of the transfer function. 
+        dfun : ndarray [nfft]
+            time domain of the transfer function. 
+            
+        Delay time t=0 in centered in the middle.
+
+        Notes
+        -----
+        The three correlation-based estimates in the time domain
+            correlation (cross-spectrum)
+            deconvolution (transfer function)
+            norm correlation (coherency)
+        Correlation:
+            Sxy = Sx*conj(Sy)
+        Deconvolution:
+            Sxy/Sy = Sx*conj(Sy)/Sy^2
+        Coherency
+            Sxy/sqrt(Sx*Sy)
+        
         """
 
         nf    = self.nf

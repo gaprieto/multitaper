@@ -1,8 +1,7 @@
 # Testing DPSS codes. 
 
 import multitaper.utils  as utils
-import multitaper.mtspec as mtspec
-import multitaper.mtcross as mtcross
+import multitaper.mtcross as cross
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -32,14 +31,14 @@ y    = utils.get_data(fname2)
 #------------------------------------------------
 
 print('----- Sine IRF calculation -------')
-Sxy      = mtcross.sinecross(x,y,ntap=20,dt=dt)
+Sxy      = cross.SineCross(x,y,ntap=20,dt=dt)
 Sxc, Sch, Sdcnv  = Sxy.mt_corr()
 Si = np.linspace(Sxy.nf-500,Sxy.nf+500,1001,dtype=int)
 St = Si-float(Sxy.nf)
 print('----------------------------------')
 
 print('----- MT IRF calculation -------')
-Pxy  = mtcross.mtcross(x,y,nw,kspec,dt)
+Pxy  = cross.MTCross(x,y,nw,kspec,dt)
 xcorr, dcohe, dconv  = Pxy.mt_corr()
 i = np.linspace(Pxy.npts-500,Pxy.npts+500,1001,dtype=int)
 t = i-float(Pxy.npts)

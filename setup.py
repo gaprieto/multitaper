@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="multitaper",
-    version="1.0.6",
+    version="1.0.7",
     author="German A. Prieto ",
     author_email="gaprietogo@unal.edu.co",
     description="Multitaper codes translated into Python",
@@ -15,5 +15,13 @@ setup(
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
+    package_data={
+        "multitaper": [
+            "examples/*.ipynb",
+            "examples/*.py",
+            "examples/figures/*.jpg",
+            "examples/figures/*.png"
+        ]
+    },
     python_requires=">=3.8",
 )   
