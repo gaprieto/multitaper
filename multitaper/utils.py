@@ -2288,7 +2288,7 @@ def get_data(fname):
 # Examples - Copy example folder to user-defined folder
 #-------------------------------------------------------------------------
 
-def copy_examples(path="./multitaper-examples")
+def copy_examples(path="./multitaper-examples"):
     """
     Copy the examples folder, so the user can have access to the
     Notebooks and .py files
