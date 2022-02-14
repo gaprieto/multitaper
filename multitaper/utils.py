@@ -2284,6 +2284,53 @@ def get_data(fname):
 # end DATA_FILE
 #-------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------
+# Examples - Copy example folder to user-defined folder
+#-------------------------------------------------------------------------
+
+def copy_examples(path="./multitaper-examples")
+    """
+    Copy the examples folder, so the user can have access to the
+    Notebooks and .py files
+  
+    Use `multitaper.utils.copy_examples()` function to copy all
+    Notebooks and .py example files to local directory
+
+    Install the examples for multitaper in the given location.
+
+    WARNING: If the path exists, files will be overwritten. 
+    Default path is `./multitaper-examples/` to avoid potential 
+    overwrite of common folder names.
+    Dependencies for the notebooks include
+       - `matplotlib`
+       - `scipy`
+       - `numpy`
+    These need to be available in the enviroment used. 
+
+    """
+    import pkg_resources as pkg_res
+    import os
+    from distutils import dir_util
+
+    ex_path = pkg_res.resource_filename(
+        "multitaper", os.path.join("examples")
+    )
+
+    ct = dir_util.copy_tree(
+        ex_path,
+        path,
+        preserve_mode=1,
+        preserve_times=1,
+        preserve_symlinks=1,
+        update=0,
+        verbose=1,
+        dry_run=0,
+    )
+
+#-------------------------------------------------------------------------
+# End copy examples folder
+#-------------------------------------------------------------------------
+
 
 
 
