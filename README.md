@@ -1,7 +1,7 @@
-# multitaper - (before specpy)
+# `multitaper`
 Multitaper codes translated into Python. 
 
-*multitaper* v.1.0.4b
+`multitaper` v.1.0.8
 
 Germán A. Prieto
 
@@ -40,44 +40,72 @@ The modules not only includes power spectral density (PSD) estimation with confi
 
 # Major updates
 - v1.0.3 - Created data folder to run scripts and notebooks (in examples/) with correct path. 
+- v1.0.8 - All modules, functions and classes are now documented with docstring.
+         - Example Notebooks and .py files can now be installed
+         - Data for examples is automatically downloaded from Zenodo repository.
 
 # Installation
-The *multitaper* package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). pip installation not yet available. You can also simply download the folder and add to your Python path. 
+The `multitaper` package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). pip installation not yet available. You can also simply download the folder and add to your Python path. 
 
-# With Conda:
+### Dependencies
+
+You will need **Python 3.7+**. The following packages are required:
+
+- [`numpy`](http://numpy.org)
+- [`scipy`](https://scipy.org)
+
+__Optional dependencies__ for plotting and example Notebooks:
+
+- [`jupyter`](https://jupyter.org/)
+- [`matplotlib`](https://matplotlib.org/)
+
+## With Conda:
 ```python
 > conda install -c gprieto multitaper
 ```
-# I recommend creating a virtual environment before:
+## I recommend creating a virtual environment before:
 ```python
 > conda create --name mtspec
 > conda activate mtspec
 > conda install -c gprieto multitaper
 ```
 
-# With pip:
+## With pip:
 ```python
 > pip install multitaper
 ```
 
+## Local install
+Download a copy of the codes from github 
+```
+git clone https://github.com/gprieto/multitaper.git
+```
+or simply download ZIP file from https://github.com/gaprieto/multitaper
+and navigate to the directory and type
+```
+pip install .
+```
 
-# Documentation 
+# Running the examples
+A collection of Jupyter Notebooks and `.py` scripts are available 
+to reproduce the figures of the F90 paper (Prieto et al., 2009) 
+and the Python version  (Prieto 2022 under review). Data used in the 
+examples is automatically downloaded from a Zenodo repository. 
 
-A collection of Jupyter Notebooks is available to reproduce the figures
-of the F90 paper (Prieto et al., 2009) and the Python version 
-(Prieto 2022 under review). It has examples of a number of uses of 
-the code as listed above. 
+To download the example folder
+```
+import multitaper.utils as utils
+utils.copy_examples()
+``` 
+will create a folder `multitaper-examples/`. To run, just open in 
+Jupyter Notebooks or run the python scripts (with the `multitaper`
+codes previously installed).
  
- 
-NOTES:
-Uses Scipy for FFT (fftw). 
-Uses Scipy for DPSS calculation. 
-
 # Citation:
 Please use this reference when citing the codes. 
 
 Prieto, G.A. (2022). multitaper: A multitaper spectrum analysis package in Python. Seis. Res. Lett. Under review.
 
-and/or
+or
 
 Prieto, G., Parker , R., & Vernon III, F. (2009). A Fortran 90 library for multitaper spectrum analysis. Computers & Geosciences, Vol. 35, pp. 1701–1710.
