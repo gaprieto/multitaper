@@ -2307,6 +2307,11 @@ def copy_examples(path="./multitaper-examples"):
        - `numpy`
     These need to be available in the enviroment used. 
 
+    References
+    ----------
+    Codes based on an example from 
+    Ben Mather, Robert Delhaye, within the PyCurious package. 
+
     """
     import pkg_resources as pkg_res
     import os
@@ -2316,15 +2321,15 @@ def copy_examples(path="./multitaper-examples"):
         "multitaper", os.path.join("examples")
     )
 
-    ct = dir_util.copy_tree(
-        ex_path,
-        path,
-        preserve_mode=1,
-        preserve_times=1,
-        preserve_symlinks=1,
-        update=0,
-        verbose=1,
-        dry_run=0,
+    cex = dir_util.copy_tree(
+         ex_path,
+         path,
+         preserve_mode=1,
+         preserve_times=1,
+         preserve_symlinks=1,
+         update=0,
+         verbose=0,
+         dry_run=0,
     )
 
 #-------------------------------------------------------------------------
