@@ -45,7 +45,7 @@ The modules not only includes power spectral density (PSD) estimation with confi
          - Data for examples is automatically downloaded from Zenodo repository.
 
 # Installation
-The `multitaper` package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). pip installation not yet available. You can also simply download the folder and add to your Python path. 
+The `multitaper` package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). **pip** installation is also available. You can also simply download the folder and install  and add to your Python path. 
 
 ### Dependencies
 
