@@ -16,7 +16,7 @@ The modules not only includes power spectral density (PSD) estimation with confi
 **DPSS calculation** -  
     Calculates the discrete prolate functions (Slepian).
 
-*Jacknife Errors** -  
+**Jacknife Errors** -  
     adaptively weighted jackknife 95% confidence intervals
 
 **F-test** - 
