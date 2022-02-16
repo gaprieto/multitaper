@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../multitaper/'))
+sys.path.insert(0, os.path.abspath('./multitaper/'))
 
 print(sys.path)
 
