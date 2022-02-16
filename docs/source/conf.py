@@ -14,7 +14,7 @@ import os
 import sys
 
 print('Old path ', sys.path)
-sys.path.insert(0, os.path.abspath('../../../multitaper/'))
+sys.path.insert(0, os.path.abspath('../../../../multitaper/'))
 print('New path ', sys.path)
 
 
