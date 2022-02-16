@@ -24,7 +24,6 @@ print(os.listdir(os.path.abspath("../../")))
 
 print(os.listdir(os.path.abspath("../../../")))
 
-print(os.listdir(os.path.abspath("../../../../")))
 
 # -- Project information -----------------------------------------------------
 
