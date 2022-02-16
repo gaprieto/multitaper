@@ -15,7 +15,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
-#sys.path.insert(0, os.path.abspath('../../multitaper/'))
+sys.path.insert(0, os.path.abspath('../../multitaper'))
 print('New path ', sys.path)
 
 print(os.listdir(os.path.abspath("../../")))
