@@ -45,6 +45,10 @@ The modules not only includes power spectral density (PSD) estimation with confi
          - All comments by reviewers addressed
          - To do: improve Python standard for loops (improve speed). 
 
+# Documentation
+- Web page (https://multitaper.readthedocs.io) created using Sphinx and published via readthedocs.
+- PDF can be found in the main folder (multitaper.pdf)
+
 # Installation
 The `multitaper` package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). **pip** installation is also available. You can also simply download the folder and install  and add to your Python path. 
 
