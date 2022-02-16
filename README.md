@@ -13,10 +13,10 @@ The modules not only includes power spectral density (PSD) estimation with confi
 
 *multitaper* can also do:
 
-**DPSS calculation** -  
+**DPSS calculation** - 
     Calculates the discrete prolate functions (Slepian).
 
-**Jacknife Errors** -  
+**Jacknife Errors** - 
     adaptively weighted jackknife 95% confidence intervals
 
 **F-test** - 
@@ -37,13 +37,16 @@ The modules not only includes power spectral density (PSD) estimation with confi
     Possible conversion to time-domain. 
 
 # Major updates
-- v1.0.3 - Created data folder to run scripts and notebooks (in examples/) with correct path. 
-- v1.0.8 - All modules, functions and classes are now documented with docstring.
-         - Example Notebooks and .py files can now be installed
-         - Data for examples is automatically downloaded from Zenodo repository.
-- v1.1.0 - Complete (almost complete) documentation, via Sphinx.
-         - All comments by reviewers addressed
-         - To do: improve Python standard for loops (improve speed). 
+- v1.0.3 
+   - Created data folder to run scripts and notebooks (in examples/) with correct path. 
+- v1.0.8 
+   - All modules, functions and classes are now documented with docstring.
+   - Example Notebooks and .py files can now be installed
+   - Data for examples is automatically downloaded from Zenodo repository.
+- v1.1.0 
+   - Complete (almost complete) documentation, via Sphinx.
+   - All comments by reviewers addressed
+   - To do: improve Python standard for loops (improve speed). 
 
 # Documentation
 - Web page (https://multitaper.readthedocs.io) created using Sphinx and published via readthedocs.
