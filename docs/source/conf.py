@@ -12,16 +12,10 @@
 #
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath('../../multitaper'))
-print('New path ', sys.path)
 
-print(os.listdir(os.path.abspath("../../")))
-
-print(os.listdir(os.path.abspath("../../multitaper")))
-
+# -- Mock modules ------------------------------------------------------------
+autodoc_mock_imports = ['_multitaper']
 
 # -- Project information -----------------------------------------------------
 
