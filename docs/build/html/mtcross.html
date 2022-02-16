@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtcross module &#8212; multitaper 1.0.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils module" href="utils.html" />
+    <link rel="prev" title="mtspec module" href="mtspec.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mtcross">
+<span id="mtcross-module"></span><h1>mtcross module<a class="headerlink" href="#module-mtcross" title="Permalink to this headline">¶</a></h1>
+<p>Module that contains all multivariate-multitaper codes.</p>
+<dl class="simple">
+<dt>Contains:</dt><dd><ul class="simple">
+<li><p>mt_cohe</p></li>
+<li><p>mt_deconv</p></li>
+<li><p>To do: wv_spec</p></li>
+</ul>
+</dd>
+</dl>
+<p>Module with routines for bi-variate multitaper spectrum estimation.
+Contains the main MTCross and SineCross classes where the estimates 
+are made and stored.</p>
+<p>It takes univariate classes MTSpec and MTSine for estimating coherence
+tranfer functions, etc.</p>
+<p>See module mtspec for univariate problems</p>
+<p><strong>Classes</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>MTCross   - A class to represent Thomson’s multitaper cross-spectra</p></li>
+<li><p>SineCross - A class to represent Sine Multitaper cross-spectra</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt><strong>Functions</strong></dt><dd><p>None</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtcross.MTCross">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtcross.</span></span><span class="sig-name descname"><span class="pre">MTCross</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.MTCross" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtcross.MTCross.MTCross">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MTCross</span></span><a class="headerlink" href="#mtcross.MTCross.MTCross" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for bi-variate Thomson multitaper estimates</p>
+</dd></dl>
+
+<p><strong>Attibutes</strong></p>
+<p><em>Parameters</em></p>
+<dl class="simple">
+<dt>npts<span class="classifier">int</span></dt><dd><p>number of points of time series</p>
+</dd>
+<dt>nfft<span class="classifier">int</span></dt><dd><p>number of points of FFT. Dafault adds padding.</p>
+</dd>
+<dt>nw<span class="classifier">flaot</span></dt><dd><p>time-bandwidth product</p>
+</dd>
+<dt>kspec<span class="classifier">int</span></dt><dd><p>number of tapers to use</p>
+</dd>
+</dl>
+<p><em>Time series</em></p>
+<dl class="simple">
+<dt>x<span class="classifier">ndarray [npts]</span></dt><dd><p>time series</p>
+</dd>
+<dt>xvar<span class="classifier">float</span></dt><dd><p>variance of time series</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>sampling interval</p>
+</dd>
+</dl>
+<p><em>Frequency vector</em></p>
+<dl class="simple">
+<dt>nf<span class="classifier">int</span></dt><dd><p>number of unique frequency points of spectral 
+estimate, assuming real time series</p>
+</dd>
+<dt>freq<span class="classifier">ndarray [nfft]</span></dt><dd><p>frequency vector in Hz</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>frequncy sampling interval</p>
+</dd>
+</dl>
+<p><em>Method</em></p>
+<dl class="simple">
+<dt>iadapt<span class="classifier">int</span></dt><dd><p>defines methos to use
+0 - adaptive multitaper
+1 - unweighted, wt =1 for all tapers
+2 - wt by the eigenvalue of DPSS</p>
+</dd>
+</dl>
+<p><em>Spectral estimates</em></p>
+<dl class="simple">
+<dt>Sxx<span class="classifier">ndarray [nfft]</span></dt><dd><p>Power spectrum of x time series</p>
+</dd>
+<dt>Syy<span class="classifier">ndarray [nfft]</span></dt><dd><p>Power spectrum of y time series</p>
+</dd>
+<dt>Sxy<span class="classifier">ndarray, complex [nfft]</span></dt><dd><p>Coss-spectrum of x, y series</p>
+</dd>
+<dt>cohe<span class="classifier">ndarray [nfft]</span></dt><dd><p>MSC, freq coherence. Normalized (0.0,1.0)</p>
+</dd>
+<dt>phase<span class="classifier">ndarray [nfft]</span></dt><dd><p>the phase of the cross-spectrum</p>
+</dd>
+<dt>cohy<span class="classifier">ndarray, complex [nfft]</span></dt><dd><p>the complex coherency, normalized cross-spectrum</p>
+</dd>
+<dt>trf<span class="classifier">ndarray, compolex [nfft]</span></dt><dd><p>the transfer function Sxy/(Syy_wl), with water-level optional</p>
+</dd>
+<dt>se<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>degrees of freedom of estimate</p>
+</dd>
+<dt>wt<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>weights for each eigencoefficient at each frequency</p>
+</dd>
+</dl>
+<p><strong>Methods</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>init      : Constructor of the MTCross class</p></li>
+<li><p>mt_deconv : Perform the deconvolution from the self.trf, by iFFT</p></li>
+<li><dl class="simple">
+<dt>mt_corr<span class="classifier">compute time-domain via iFFT of cross-spectrum, </span></dt><dd><p>coherency, and transfer function</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>German Prieto
+January 2022</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.MTCross.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.MTCross.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The constructor of the MTCross class.</p>
+<p>It performs main steps in bi-variate multitaper estimation, 
+including cross-spectrum, coherency and transfer function.</p>
+<p>MTCross class variable with attributes described above.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>x<span class="classifier">MTSpec class, or ndarray [npts,]</span></dt><dd><p>Time series signal x.
+If ndarray, the MTSpec class is created.</p>
+</dd>
+<dt>y<span class="classifier">MTSpec class, or ndarray [npts,]</span></dt><dd><p>Time series signal x
+If ndarray, the MTSpec class is created.</p>
+</dd>
+<dt>nw<span class="classifier">float, optional</span></dt><dd><p>time bandwidth product, default = 4
+Only needed if x,y are ndarray</p>
+</dd>
+<dt>kspec<span class="classifier">int, optional</span></dt><dd><p>number of tapers, default = 2*nw-1
+Only needed if x,y are ndarray</p>
+</dd>
+<dt>dt<span class="classifier">float, optional</span></dt><dd><p>sampling interval of x, default = 1.0
+Only needed if x,y are ndarray</p>
+</dd>
+<dt>nfft<span class="classifier">int, optional</span></dt><dd><p>number of frequency points for FFT, allowing for padding
+default = 2*npts+1
+Only needed if x,y are ndarray</p>
+</dd>
+<dt>iadapt<span class="classifier">int, optional</span></dt><dd><p>defines methos to use, default = 0
+0 - adaptive multitaper
+1 - unweighted, wt =1 for all tapers
+2 - wt by the eigenvalue of DPSS</p>
+</dd>
+<dt>wl<span class="classifier">float, optional</span></dt><dd><p>water-level for stabilizing deconvolution (transfer function).
+defined as proportion of mean power of Syy</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.MTCross.mt_corr">
+<span class="sig-name descname"><span class="pre">mt_corr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.MTCross.mt_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute time-domain via iFFT of cross-spectrum, 
+coherency, and transfer function</p>
+<p>Cross spectrum, coherency and transfer function 
+already pre-computed in MTCross.</p>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>xcorr<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+<dt>dcohy<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+<dt>dfun<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+</dl>
+<p>Delay time t=0 in centered in the middle.</p>
+<p><strong>Notes</strong></p>
+<dl class="simple">
+<dt>The three correlation-based estimates in the time domain</dt><dd><ul class="simple">
+<li><p>correlation (cross-spectrum)</p></li>
+<li><p>deconvolution (transfer function)</p></li>
+<li><p>norm correlation (coherency)</p></li>
+</ul>
+</dd>
+<dt>Correlation:</dt><dd><ul class="simple">
+<li><p>Sxy = Sx*conj(Sy)</p></li>
+</ul>
+</dd>
+<dt>Deconvolution:</dt><dd><ul class="simple">
+<li><p>Sxy/Sy = Sx*conj(Sy)/Sy^2</p></li>
+</ul>
+</dd>
+<dt>Coherency</dt><dd><ul class="simple">
+<li><p>Sxy/sqrt(Sx*Sy)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.MTCross.mt_deconv">
+<span class="sig-name descname"><span class="pre">mt_deconv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.MTCross.mt_deconv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a deconvolution between two time series, returning
+the time-domain signal.</p>
+<p>MTCross has already pre-computed the cross-spectrum and 
+the transfer function.</p>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>dfun<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function. 
+delay time t=0 in centered in the middle.</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>The code more or less follows the paper
+Receiver Functions from multiple-taper spectral corre-
+lation estimates. J. Park and V. Levin., BSSA 90#6 1507-1520</p>
+<p>It also uses the code based on dual frequency I created in
+GA Prieto, Vernon, FL , Masters, G, and Thomson, DJ (2005), 
+Multitaper Wigner-Ville Spectrum for Detecting Dispersive 
+Signals from Earthquake Records, Proceedings of the 
+Thirty-Ninth Asilomar Conference on Signals, Systems, and 
+Computers, Pacific Grove, CA., pp 938-941.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mtcross.SineCross">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtcross.</span></span><span class="sig-name descname"><span class="pre">SineCross</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.SineCross" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtcross.SineCross.SineCross">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SineCross</span></span><a class="headerlink" href="#mtcross.SineCross.SineCross" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for bi-variate Sine multitaper estimates</p>
+</dd></dl>
+
+<p><strong>Attibutes</strong></p>
+<dl class="simple">
+<dt><em>Parameters</em></dt><dd><dl class="simple">
+<dt>npts<span class="classifier">int</span></dt><dd><p>number of points of time series</p>
+</dd>
+<dt>nfft<span class="classifier">int</span></dt><dd><p>number of points of FFT. nfft = 2*npts</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Time series</em></dt><dd><dl class="simple">
+<dt>x<span class="classifier">ndarray [npts]</span></dt><dd><p>time series x</p>
+</dd>
+<dt>xvar<span class="classifier">float</span></dt><dd><p>variance of x time series</p>
+</dd>
+<dt>y<span class="classifier">ndarray [npts]</span></dt><dd><p>time series y</p>
+</dd>
+<dt>yvar<span class="classifier">float</span></dt><dd><p>variance of y time series</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Frequency vector</em></dt><dd><dl class="simple">
+<dt>nf<span class="classifier">int</span></dt><dd><p>number of unique frequency points of spectral 
+estimate, assuming real time series</p>
+</dd>
+<dt>freq<span class="classifier">ndarray [nfft]</span></dt><dd><p>frequency vector in Hz</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>frequncy sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Method</em></dt><dd><dl class="simple">
+<dt>ntap<span class="classifier">int</span></dt><dd><p>fixed number of tapers
+if ntap&lt;0, use kopt</p>
+</dd>
+<dt>kopt<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>number of tapers at each frequency</p>
+</dd>
+<dt>ntimes<span class="classifier">int</span></dt><dd><p>number of max iterations to perform</p>
+</dd>
+<dt>ireal<span class="classifier">int</span></dt><dd><p>0 - real time series
+1 - complex time series</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Spectral estimates</em></dt><dd><dl class="simple">
+<dt>cspec<span class="classifier">ndarray, complex [nfft]</span></dt><dd><p>Coss-spectrum of x, y series</p>
+</dd>
+<dt>sxy<span class="classifier">ndarray, complex [nfft]</span></dt><dd><p>Coss-spectrum of x, y series</p>
+</dd>
+<dt>cohe<span class="classifier">ndarray [nfft]</span></dt><dd><p>MSC, freq coherence. Normalized (0.0,1.0)</p>
+</dd>
+<dt>phase<span class="classifier">ndarray [nfft]</span></dt><dd><p>the phase of the cross-spectrum</p>
+</dd>
+<dt>gain<span class="classifier">ndarray [nfft]</span></dt><dd><p>the gain for the two spectra</p>
+</dd>
+<dt>cohy<span class="classifier">ndarray, complex [nfft]</span></dt><dd><p>the complex coherency, normalized cross-spectrum</p>
+</dd>
+<dt>trf<span class="classifier">ndarray, compolex [nfft]</span></dt><dd><p>the transfer function Sxy/(Syy_wl), with water-level optional</p>
+</dd>
+<dt>se<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>degrees of freedom of estimate</p>
+</dd>
+<dt>conf<span class="classifier">ndarray [nfft,]</span></dt><dd><p>confidence in cross-spectrum at each frequency</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><strong>Methods</strong></p>
+<ul class="simple">
+<li><p>init      : Constructor of the SineCross class</p></li>
+<li><p>mt_deconv : Perform the deconvolution from the self.trf, by iFFT</p></li>
+<li><dl class="simple">
+<dt>mt_corr<span class="classifier">compute time-domain via iFFT of cross-spectrum, </span></dt><dd><p>coherency, and transfer function</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>January 2022, German A. Prieto</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.SineCross.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.SineCross.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the coherence and cross-spectrum estimation 
+by the sine multitaper method.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>x<span class="classifier">MTSine class, or ndarray [npts,]</span></dt><dd><p>Time series signal x.
+If ndarray, the MTSpec class is created.</p>
+</dd>
+<dt>y<span class="classifier">MTSine class, or ndarray [npts,]</span></dt><dd><p>Time series signal x
+If ndarray, the MTSpec class is created.</p>
+</dd>
+<dt>ntap<span class="classifier">int, optional</span></dt><dd><p>constant number of tapers (def = 0)</p>
+</dd>
+<dt>ntimes<span class="classifier">int, optional</span></dt><dd><p>number of iterations to perform</p>
+</dd>
+<dt>fact<span class="classifier">float, optional</span></dt><dd><p>degree of smoothing (def = 1.)</p>
+</dd>
+<dt>dt<span class="classifier">float, optional</span></dt><dd><p>sampling interval of time series</p>
+</dd>
+<dt>p<span class="classifier">float, optional</span></dt><dd><p>proportion for confidence intervale estimation</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995</p>
+<p>Based on Bob Parker psd.f and cross.f codes. Most of the comments 
+come from his documentation as well.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.SineCross.mt_corr">
+<span class="sig-name descname"><span class="pre">mt_corr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.SineCross.mt_corr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute time-domain via iFFT of cross-spectrum, 
+coherency, and transfer function</p>
+<p>Cross spectrum, coherency and transfer function 
+already pre-computed in SineCross class.</p>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>xcorr<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+<dt>dcohy<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+<dt>dfun<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function.</p>
+</dd>
+</dl>
+<p>Delay time t=0 in centered in the middle.</p>
+<p><strong>Notes</strong></p>
+<dl class="simple">
+<dt>The three correlation-based estimates in the time domain</dt><dd><ul class="simple">
+<li><p>correlation (cross-spectrum)</p></li>
+<li><p>deconvolution (transfer function)</p></li>
+<li><p>norm correlation (coherency)</p></li>
+</ul>
+</dd>
+<dt>Correlation:</dt><dd><ul class="simple">
+<li><p>Sxy = Sx*conj(Sy)</p></li>
+</ul>
+</dd>
+<dt>Deconvolution:</dt><dd><ul class="simple">
+<li><p>Sxy/Sy = Sx*conj(Sy)/Sy^2</p></li>
+</ul>
+</dd>
+<dt>Coherency</dt><dd><ul class="simple">
+<li><p>Sxy/sqrt(Sx*Sy)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtcross.SineCross.mt_deconv">
+<span class="sig-name descname"><span class="pre">mt_deconv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtcross.SineCross.mt_deconv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a deconvolution between two time series, returning
+the time-domain signal.</p>
+<p>SineCross has already pre-computed the cross-spectrum and 
+the transfer function.</p>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>dfun<span class="classifier">ndarray [nfft]</span></dt><dd><p>time domain of the transfer function. 
+delay time t=0 in centered in the middle.</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">multitaper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mtspec.html">mtspec module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">mtcross module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mtspec.html" title="previous chapter">mtspec module</a></li>
+      <li>Next: <a href="utils.html" title="next chapter">utils module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, German A. Prieto.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/mtcross.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

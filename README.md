@@ -1,13 +1,11 @@
 # `multitaper`
 Multitaper codes translated into Python. 
 
-`multitaper` v.1.0.8
+`multitaper` v.1.1.0
 
 Germán A. Prieto
 
-Departamento de Geociencias
-
-Universidad Nacional de Colomnbia
+Departamento de Geociencias, Universidad Nacional de Colomnbia
 
 
 A collection of modules for spectral analysis using the multitaper algorithm. 
@@ -43,6 +41,9 @@ The modules not only includes power spectral density (PSD) estimation with confi
 - v1.0.8 - All modules, functions and classes are now documented with docstring.
          - Example Notebooks and .py files can now be installed
          - Data for examples is automatically downloaded from Zenodo repository.
+- v1.1.0 - Complete (almost complete) documentation, via Sphinx.
+         - All comments by reviewers addressed
+         - To do: improve Python standard for loops (improve speed). 
 
 # Installation
 The `multitaper` package is composed of a number of Python modules. As of January 2022, multitaper can be installed using [conda](https://docs.conda.io/en/latest/). **pip** installation is also available. You can also simply download the folder and install  and add to your Python path. 

@@ -1,0 +1,956 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>utils module &#8212; multitaper 1.0.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="mtcross module" href="mtcross.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-utils">
+<span id="utils-module"></span><h1>utils module<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<p>Module with all the definitions (routines) of general use 
+of the multitaper routines.</p>
+<dl class="simple">
+<dt>Contains:</dt><dd><ul class="simple">
+<li><p>set_xint   - setup Ierly’s quadrature</p></li>
+<li><p>xint       - Quadrature by Ierley’s method of Chebychev sampling.</p></li>
+<li><p>dpss_ev    - Recalculate the DPSS eigenvalues using Quadrature</p></li>
+<li><p>dpss       - calculate the DPSS for given NW, NPTS</p></li>
+<li><p>eigenspec  - calculate eigenspectra using DPSS sequences.</p></li>
+<li><p>adaptspec  - calculate adaptively weighted power spectrum</p></li>
+<li><p>jackspec   - calculate adaptively weighted jackknifed 95% confidence limits</p></li>
+<li><p>qiinv      - calculate the Stationary Inverse Theory Spectrum.</p></li>
+<li><p>ftest      - performs the F-test for a line component</p></li>
+<li><p>yk_reshape - reshape eigenft’s around significant spectral lines</p></li>
+<li><p>wt2dof     - calculate the d.o.f. of the multitaper</p></li>
+<li><p>df_spec    - Dual frequency spectrum, using two MTSPEC classes to compute.</p></li>
+<li><p>sft        - the slow Fourier transform</p></li>
+<li><p>squick     - for sine multitaper, constructs average multitaper</p></li>
+<li><p>squick2    - for sine multitaper, constructs average multitaper, 2 signals</p></li>
+<li><p>sadapt     - for sine multitaper, adaptive estimation of # of tapers</p></li>
+<li><p>sadapt2    - for sine multitaper, same but for 2 signals</p></li>
+<li><p>north      - for sine multitaper, derivatives of spectrum</p></li>
+<li><p>curb       - for sine multitaper, clips # of tapers</p></li>
+<li><p>get_data   - download data and load into numpy array</p></li>
+</ul>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.adaptspec">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">adaptspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.adaptspec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate adaptively weighted power spectrum
+Options for non-adaptive estimates are posible, with optional parameter 
+iadapt, using average of sk’s or weighted by eigenvalue.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>yk<span class="classifier">complex ndarray [nfft,kspec]    </span></dt><dd><p>complex array of kspec eigencoefficients</p>
+</dd>
+<dt>sk<span class="classifier">ndarray [nfft,kspec]    </span></dt><dd><p>array containing kspe power spectra</p>
+</dd>
+<dt>lamb<span class="classifier">ndarray [kspec]</span></dt><dd><p>eigenvalues of tapers</p>
+</dd>
+<dt>iadapt<span class="classifier">int</span></dt><dd><p>defines methos to use, default = 0
+0 - adaptive multitaper
+1 - unweighted, wt =1 for all tapers
+2 - wt by the eigenvalue of DPSS</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray [nfft]</span></dt><dd><p>real vector containing adaptively weighted spectrum</p>
+</dd>
+<dt>se<span class="classifier">ndarray [nfft]</span></dt><dd><p>real vector containing the number of degrees of freedom
+for the spectral estimate at each frequency.</p>
+</dd>
+<dt>wt<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>real array containing the ne weights for kspec 
+eigenspectra normalized so that if there is no bias, the
+weights are unity.</p>
+</dd>
+</dl>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>German Prieto, Aug 2006</p>
+</div></blockquote>
+<p>Corrected the estimation of the dofs se (sum of squares of wt is 1.0)
+maximum wt = 1</p>
+<p>German Prieto, October 2007 
+Added the an additional subroutine noadaptspec to calculate a simple non-adaptive multitaper spectrum.
+This can be used in transfer functions and deconvolution, 
+where adaptive methods might not be necesary.</p>
+<p><strong>Calls</strong></p>
+<p>nothing</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.copy_examples">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">copy_examples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./multitaper-examples'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.copy_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the examples folder, so the user can have access to the
+Notebooks and .py files</p>
+<p>Use <cite>multitaper.utils.copy_examples()</cite> function to copy all
+Notebooks and .py example files to local directory</p>
+<p>Install the examples for multitaper in the given location.</p>
+<p>WARNING: If the path exists, files will be overwritten. 
+Default path is <cite>./multitaper-examples/</cite> to avoid potential 
+overwrite of common folder names.
+Dependencies for the notebooks include
+- <cite>matplotlib</cite>
+- <cite>scipy</cite>
+- <cite>numpy</cite>
+These need to be available in the enviroment used.</p>
+<p><strong>References</strong></p>
+<blockquote>
+<div><p>Codes based on an example from 
+Ben Mather, Robert Delhaye, within the PyCurious package.</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.curb">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">curb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_in</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.curb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes n-long vector v[n] and rewrites it so that all points lie below
+the piece-wise linear function v(k) + abs(j-k), where v(k)
+is a local minimum in the original v.</p>
+<p>Effectively clips strong peaks and keeps slopes under 1 in
+magnitude.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>v_in<span class="classifier">ndarray [n] </span></dt><dd><p>vector to be clipped, n-long</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>v<span class="classifier">ndarray [n] </span></dt><dd><p>clipped vector</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.df_spec">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">df_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.df_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dual frequency spectrum using one/two MTSPEC classes. 
+For now, only positive frequencies are studied</p>
+<p>Construct the dual-frequency spectrum from the yk’s and the 
+weights of the usual multitaper spectrum estimation.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>x<span class="classifier">MTSpec class</span></dt><dd><p>variable with the multitaper information (yk’s)</p>
+</dd>
+<dt>y<span class="classifier">MTSpec class, optional</span></dt><dd><p>similar to x for a second time series
+if y is None, auto-dual frequency is calculated.</p>
+</dd>
+<dt>fmin<span class="classifier">float, optional</span></dt><dd><p>minimum frequency to calculate the DF spectrum</p>
+</dd>
+<dt>fmax<span class="classifier">float, optional</span></dt><dd><p>minimum frequency to calculate the DF spectrum</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>df_spec<span class="classifier">ndarray complex, 2D (nf,nf)</span></dt><dd><p>the complex dual-frequency cross-spectrum. Not normalized</p>
+</dd>
+<dt>df_cohe<span class="classifier">ndarray, 2D (nf,nf)</span></dt><dd><p>MSC, dual-freq coherence matrix. Normalized (0.0,1.0)</p>
+</dd>
+<dt>df_phase<span class="classifier">ndarray, 2D (nf,nf)</span></dt><dd><p>the dual-frequency phase</p>
+</dd>
+</dl>
+<p><strong>Notes</strong></p>
+<p>both x and y need the same parameters (npts, kspec, etc.)</p>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>German Prieto, September 2005</p>
+<p>German A. Prieto, September 2007</p>
+</div></blockquote>
+<p>Slight rewrite to adjust to newer mtspec codes.</p>
+<p><strong>Calls</strong></p>
+<blockquote>
+<div><p>Nothing</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.dpss">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">dpss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.dpss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculation of the Discrete Prolate Spheroidal Sequences, and 
+the correspondent eigenvalues.</p>
+<ul class="simple">
+<li><p>Slepian, D.     1978  Bell Sys Tech J v57 n5 1371-1430</p></li>
+<li><p>Thomson, D. J.  1982  Proc IEEE v70 n9 1055-1096</p></li>
+</ul>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>npts<span class="classifier">int</span></dt><dd><p>the number of points in the series</p>
+</dd>
+<dt>nw<span class="classifier">float</span></dt><dd><p>the time-bandwidth product (number of Rayleigh bins)</p>
+</dd>
+<dt>kspec<span class="classifier">int</span></dt><dd><p>Optional, the desired number of tapers default = 2*nw-1</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>v<span class="classifier">ndarray (npts,kspec)</span></dt><dd><p>the eigenvectors (tapers) are returned in v[npts,nev]</p>
+</dd>
+<dt>lamb<span class="classifier">ndarray (kspec)      </span></dt><dd><p>the eigenvalues of the v’s</p>
+</dd>
+</dl>
+<p><strong>Notes</strong></p>
+<p>In SCIPY the codes are already available to calculate the DPSS. 
+Eigenvalues are calculated using Chebeshev Quadrature. 
+Code also performs interpolation if NPTS&gt;1e5</p>
+<p>Also, define DPSS to be positive-standard, meaning vn’s always 
+start positive, whether symmetric or not.</p>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>December 2020</p>
+</div></blockquote>
+<p><strong>Calls</strong></p>
+<p>scipy.signal.windows.dpss
+dpss_ev</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.dpss2">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">dpss2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.dpss2" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a try to compute the DPSS using the original Thomson
+approach. It reduces the problem to half the size and inverts
+independently for the even and odd functions.</p>
+<p>This is work in progress and not used.</p>
+<dl class="simple">
+<dt>Modified from F90 library:</dt><dd><p>German Prieto
+December 2020</p>
+</dd>
+</dl>
+<p>The tapers are the eigenvectors of the tridiagonal matrix sigma(i,j)
+[see Slepian(1978) eq 14 and 25.] They are also the eigenvectors of
+the Toeplitz matrix eq. 18. We solve the tridiagonal system in</p>
+<p>scipy.linalg.eigh_tridiagonal</p>
+<p>(real symmetric tridiagonal solver) for the tapers and use 
+them in the integral equation in the frequency domain 
+(dpss_ev subroutine) to get the eigenvalues more accurately, 
+by performing Chebychev Gaussian Quadrature following Thomson’s codes.</p>
+<p>First, we create the main and off-diagonal vectors of the 
+tridiagonal matrix. We compute separetely the even and odd tapers, 
+by calling eigh_tridiagonal from SCIPY.</p>
+<p>We, refine the eigenvalues, by computing the inner bandwidth 
+energy in the frequency domain (eq. 2.6 Thomson). Also the “leakage”
+(1 - eigenvalue) is estimated, independenly if necesary.</p>
+<p>In SCIPY the codea are already available to calculate the DPSS. 
+Eigenvalues are calculated using Chebeshev Quadrature.</p>
+<p>Code also performs interpolation if NPTS&gt;1e5
+Also, define DPSS to be positive-standard, meaning vn’s always 
+start positive, whether symmetric or not.</p>
+<p><strong>Calls</strong></p>
+<p>To do</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.dpss_ev">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">dpss_ev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-14</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.dpss_ev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recalculate the DPSS eigenvalues, performing the 
+integration in the -W:W range, using Quadrature.</p>
+<p>computes eigenvalues for the discrete prolate spheroidal sequences
+in efn by integration of the corresponding squared discrete prolate
+spheroidal wavefunctions over the inner domain. Due to symmetry, we
+perform integration from zero to w.</p>
+<p>We use Chebychev quadrature for the numerical integration.</p>
+<p><em>Parameters</em></p>
+<dl class="simple">
+<dt>vn<span class="classifier">ndarray [npts,kspec]</span></dt><dd><p>DPSS to calculate eigenvalues</p>
+</dd>
+<dt>w<span class="classifier">float</span></dt><dd><p>the bandwidth (= time-bandwidth product/ndata)</p>
+</dd>
+<dt>atol<span class="classifier">float, optional</span></dt><dd><p>absolute error tolerance for the integration. this should
+be set to 10**-n, where n is the number of significant figures
+that can be be represented on the machine.
+default = 1e-14</p>
+</dd>
+</dl>
+<p><em>Returns</em></p>
+<dl class="simple">
+<dt>lamb<span class="classifier">ndarray [kspec]</span></dt><dd><p>vector of length vn.shape[1], contains the eigenvalues</p>
+</dd>
+</dl>
+<p><em>Modified</em></p>
+<blockquote>
+<div><p>November 2004 (German A. Prieto)</p>
+</div></blockquote>
+<p><em>Calls</em></p>
+<p>xint</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.eigenspec">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">eigenspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfft</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.eigenspec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate eigenspectra using DPSS sequences. 
+Gets yk’s from Thomson (1982).</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>x<span class="classifier">ndarray [npts,0]</span></dt><dd><p>real vector with the time series</p>
+</dd>
+<dt>vn<span class="classifier">ndarray [npts,kspec]   </span></dt><dd><p>the different tapers computed in dpss</p>
+</dd>
+<dt>lambda<span class="classifier">ndarray [kspec]    </span></dt><dd><p>the eigenvalues of the tapers vn</p>
+</dd>
+<dt>nfft<span class="classifier">int          </span></dt><dd><p>number of frequency points (inc. positive 
+and negative frequencies)</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>yk<span class="classifier">complex ndarray [kspec,nfft]   </span></dt><dd><p>complex array with kspec fft’s of tapered 
+data. Regardless of real/complex input data
+all frequencies are stored. Good for coherence, 
+deconvolution, etc.</p>
+</dd>
+<dt>sk<span class="classifier">ndarray [kspec,nfft]  </span></dt><dd><p>real array with kspec eigenspectra</p>
+</dd>
+</dl>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>German Prieto
+November 2004</p>
+</div></blockquote>
+<p><strong>Notes</strong></p>
+<p>Computes eigen-ft’s by windowing real data with dpss and taking ffts
+Note that fft is unnormalized and window is such that its sum of 
+squares is one, so that psd=yk**2.</p>
+<p>The fft’s are computed using SCIPY FFT codes, and parallel FFT can 
+potentially speed up the calculation. Up to KSPEC works are sent.
+The yk’s are saved to get phase information. Note that tapers are 
+applied to the original data (npts long) and the FFT is zero padded
+up to NFFT points.</p>
+<p><strong>Calls</strong></p>
+<p>scipy.fft.fft</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.ftest">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">ftest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yk</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.ftest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the F test for a line component</p>
+<p>Compute F-test for single spectral line components
+at the frequency bins given by the mtspec routines.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>vn<span class="classifier">ndarray [npts,kspec]</span></dt><dd><p>Slepian sequences real</p>
+</dd>
+<dt>yk<span class="classifier">ndarray, complex [nfft,kspec]</span></dt><dd><p>multitaper eigencoefficients, complex
+kspec fft’s of tapered data series</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<blockquote>
+<div><p>F : ndarray [nfft]
+vector of f-test values, real
+p : ndarray [nfft]
+vector with probability of line component</p>
+</div></blockquote>
+<p><strong>Calls</strong></p>
+<blockquote>
+<div><p>scipy.stats.f.cdf, scipy.stats.f.cdf</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.get_data">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to download the data from the Zenodo repository
+with the direct URL path (fixed).</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>fname<span class="classifier">char</span></dt><dd><p>filename of the data to download</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>data<span class="classifier">ndarray</span></dt><dd><p>numpy array with the downloaded data
+In case of error, data = 0 is returned</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.jackspec">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">jackspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">se</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.jackspec" title="Permalink to this definition">¶</a></dt>
+<dd><p>code to calculate adaptively weighted jackknifed 95% confidence limits</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray [nfft]</span></dt><dd><p>real vector containing adaptively weighted spectrum</p>
+</dd>
+<dt>sk<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>array with kth power spectra</p>
+</dd>
+<dt>wt<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>real array containing the ne weights for kspec 
+eigenspectra normalized so that if there is no bias, the
+weights are unity.</p>
+</dd>
+<dt>se<span class="classifier">ndarray [nfft]</span></dt><dd><p>real vector containing the number of degrees of freedom
+for the spectral estimate at each frequency.</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec_ci<span class="classifier">ndarray [nfft,2]</span></dt><dd><p>real array of jackknife error estimates, with 5 and 95%
+confidence intervals of the spectrum.</p>
+</dd>
+</dl>
+<p><strong>Calls</strong></p>
+<p>scipy.stats.t.ppf</p>
+<p><strong>Modified</strong></p>
+<p>German Prieto, Aug 2006</p>
+<p>German Prieto, March 2007</p>
+<p>Changed the Jackknife to be more efficient.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.north">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">north</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.north" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs LS fit to s by
+a degree-two polynomial in an orthogonal basis.
+Function to be run with the Sine multitaper codes.</p>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>ds<span class="classifier">float</span></dt><dd><p>estimate of 1st derivative  ds/dn  at center of record</p>
+</dd>
+<dt>dds<span class="classifier">float</span></dt><dd><p>estimate of 2nd derivative</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.qiinv">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">qiinv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.qiinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to calculate the Quadratic Spectrum using the method 
+developed by Prieto et al. (2007).</p>
+<p>The first 2 derivatives of the spectrum are estimated and the 
+bias associated with curvature (2nd derivative) is reduced.</p>
+<p>Calculate the Stationary Inverse Theory Spectrum.
+Basically, compute the spectrum inside the innerband.</p>
+<p>This approach is very similar to D.J. Thomson (1990).</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray [nfft,0]    </span></dt><dd><p>the adaptive multitaper spectrum (so far)</p>
+</dd>
+<dt>yk<span class="classifier">ndarrau, complex [npts,kspec]  </span></dt><dd><p>multitaper eigencoefficients, complex</p>
+</dd>
+<dt>wt<span class="classifier">ndarray [nf,kspec]     </span></dt><dd><p>the weights of the different coefficients. 
+input is the original multitaper weights, 
+from the Thomson adaptive weighting. 
+vn : ndarray [npts,kspec]  
+the Slepian sequences</p>
+</dd>
+<dt>lambda<span class="classifier">ndarray [kspec]   </span></dt><dd><p>the eigenvalues of the Slepian sequences</p>
+</dd>
+<dt>nw<span class="classifier">float             </span></dt><dd><p>The time-bandwisth product</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>qispec<span class="classifier">ndarray [nfft,0]</span></dt><dd><p>the QI spectrum estimate</p>
+</dd>
+<dt>ds<span class="classifier">ndarray [nfft,0]       </span></dt><dd><p>the estimate of the first derivative</p>
+</dd>
+<dt>dds<span class="classifier">ndarray [nfft,0]      </span></dt><dd><p>the estimate of the second derivative</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>G. A. Prieto, R. L. Parker, D. J. Thomson, F. L. Vernon, 
+and R. L. Graham (2007), Reducing the bias of multitaper 
+spectrum estimates,  Geophys. J. Int., 171, 1269-1281. 
+doi: 10.1111/j.1365-246X.2007.03592.x.</p>
+<p><strong>Notes</strong></p>
+<p>In here I have made the Chebyshev polinomials unitless, 
+meaning that the associated parameters ALL have units 
+of the PSD and need to be normalized by 1/W for lpha_1, 
+1/W**2 for lpha_2, etc.</p>
+<p><strong>Modified</strong></p>
+<p>Nov 2021 (German A Prieto)</p>
+<p>Major adjustment in the inverse problem steps. 
+Now, the constant term is first inverted for, 
+and then the 1st and 2nd derivative so that we 
+obtain an independent 2nd derivative.</p>
+<p>June 5, 2009 (German A. Prieto)</p>
+<p>Major change, saving some important
+values so that if the subroutine is called 
+more than once, with similar values, many of 
+the variables are not calculated again, making 
+the code run much faster.</p>
+<p><strong>Calls</strong></p>
+<p>scipy.optimize.nnls, scipy.linalg.qr,
+scipy.linalg.lstsq</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.sadapt">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">sadapt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nptwo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.sadapt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the (sine multitaper) adaptive spectral estimation
+From a basic pilot estimate, computes S” to be used
+in (13) of Riedel and Sidorenko (1995) for the 
+MSE spectrum.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>nptwo<span class="classifier">int</span></dt><dd><p>The twice signal length (2*npts)</p>
+</dd>
+<dt>fx<span class="classifier">ndarray, complex [nptwo]               </span></dt><dd><p>The FFT of the two signals (twice length)</p>
+</dd>
+<dt>nf<span class="classifier">int</span></dt><dd><p>Number of frequency points for spec</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>Freq sampling</p>
+</dd>
+<dt>initap<span class="classifier">int</span></dt><dd><dl class="simple">
+<dt>Number of tapers to use for pilot estimate</dt><dd><p>Later we can add the spec result as test</p>
+</dd>
+</dl>
+</dd>
+<dt>ntimes<span class="classifier">int                </span></dt><dd><p>number of iterations for estimate</p>
+</dd>
+<dt>fact<span class="classifier">float                </span></dt><dd><p>degree of smoothing (def = 1.0)</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray (nf) </span></dt><dd><p>the spectral estimate</p>
+</dd>
+<dt>kopt<span class="classifier">ndarray, int [nf]</span></dt><dd><p>the number of tapers at each frequency.</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>Based on the sine multitaper code of R. L. Parker.</p>
+<p><strong>Calls</strong></p>
+<p>squick, north, curb</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.sadapt2">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">sadapt2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nptwo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.sadapt2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the adaptive spectral estimation
+From a basic pilot estimate, computes S” to be used
+in (13) of Riedel and Sidorenko (1995) for the 
+MSE spectrum.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>nptwo<span class="classifier">int</span></dt><dd><p>The twice signal length (2*npts)</p>
+</dd>
+<dt>fx<span class="classifier">ndarray, complex [nptwo,2]             </span></dt><dd><p>The FFT of the two signals (twice length)</p>
+</dd>
+<dt>nf<span class="classifier">int</span></dt><dd><p>Number of frequency points for spec</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>Freq sampling</p>
+</dd>
+<dt>initap<span class="classifier">int</span></dt><dd><dl class="simple">
+<dt>Number of tapers to use for pilot estimate</dt><dd><p>Later we can add the spec result as test</p>
+</dd>
+</dl>
+</dd>
+<dt>ntimes<span class="classifier">int                </span></dt><dd><p>number of iterations for estimate</p>
+</dd>
+<dt>fact<span class="classifier">float                </span></dt><dd><p>degree of smoothing (def = 1.0)</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray (nf,4)       </span></dt><dd><p>the spectral estimate  and coherence, phase</p>
+</dd>
+<dt>kopt<span class="classifier">ndarray, int [nf]</span></dt><dd><p>the number of tapers at each frequency.</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>Based on the sine multitaper code of R. L. Parker.</p>
+<p><strong>Calls</strong></p>
+<p>squick, north, curb</p>
+<p><strong>Calls</strong></p>
+<p>squick2, orthog</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.set_xint">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">set_xint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ising</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.set_xint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up weights and sample points for Ierley quadrature,</p>
+<p>Slightly changed from original code, to avoid using common
+blocks. Also avoided using some go to statements, not needed.</p>
+<p><em>Parameters</em></p>
+<dl class="simple">
+<dt>ising<span class="classifier">integer</span></dt><dd><dl class="simple">
+<dt>ising=1         </dt><dd><p>integrand is analytic in closed interval</p>
+</dd>
+<dt>ising=2 </dt><dd><p>integrand may have bounded singularities 
+at end points</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><em>Returns</em></p>
+<dl class="simple">
+<dt>w<span class="classifier">ndarray (nomx,lomx+1)</span></dt><dd><p>weights</p>
+</dd>
+<dt>x<span class="classifier">sample points (lomx+1)  </span></dt><dd><p>sample points</p>
+</dd>
+</dl>
+<p>lomx=number of samples = 2**nomx</p>
+<p><em>Modified</em></p>
+<p>November 2004 (German A. Prieto)</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.sft">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">sft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">om</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.sft" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the (slow) fourier transform of real 
+sequence x(i),i=1,…n at angular frequency om normalized 
+so that nyquist=pi. the sine transform is returned in st and 
+the cosine transform in ct.</p>
+<p>algorithm is that of goertzal with modifications by
+gentleman, comp.j. 1969</p>
+<p>transform is not normalized</p>
+<p>to normalize one-sided ft, divide by sqrt(data length)
+for positive om, the ft is defined as ct-(0.,1.)st or like slatec
+cfftf</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>x<span class="classifier">ndarray (n,) </span></dt><dd><p>time sequence x[0],x[1],…</p>
+</dd>
+<dt>om<span class="classifier">float</span></dt><dd><p>angular frequency of interest,
+normalized such that Nyq = pi</p>
+</dd>
+</dl>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>German Prieto
+November 2004</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.squick">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">squick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nptwo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kopt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.squick" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sine multitaper routine. With a double length FFT constructs
+FT[sin(q*n)*x(n)] from F[x(n)], that is constructs the 
+FFT of the sine tapered signal.</p>
+<p>The FFT should be performed previous to the call.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>nptwo<span class="classifier">float</span></dt><dd><p>The twice signal length (2*npts)</p>
+</dd>
+<dt>fx<span class="classifier">ndarray, clomplex              </span></dt><dd><p>The FFT of the signal (twice length)</p>
+</dd>
+<dt>nf<span class="classifier">int</span></dt><dd><p>Number of frequency points for spec</p>
+</dd>
+<dt>ntap<span class="classifier">int, optional</span></dt><dd><p>Constant number of tapers to average from
+if None, kopt is used.
+if &gt; 0  Constant value to be used
+if &lt;= 0 Use the kopt array instead</p>
+</dd>
+<dt>ktop<span class="classifier">ndarray, int [nf]</span></dt><dd><p>array of integers, with the number of tapers
+at each frequency.</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray (nf,)        </span></dt><dd><p>the spectral estimate</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<p>Based on the sine multitaper code of R. L. Parker.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.squick2">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">squick2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nptwo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kopt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.squick2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sine multitaper routine. With a double length FFT constructs
+FT[sin(q*n)*x(n)] from F[x(n)], that is constructs the 
+FFT of the sine tapered signal.</p>
+<p>The FFT should be performed previous to the call.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>nptwo<span class="classifier">float</span></dt><dd><p>The twice signal length (2*npts)</p>
+</dd>
+<dt>fx<span class="classifier">ndarray, complex [nptwo,2]             </span></dt><dd><p>The FFT of the two signals (twice length)</p>
+</dd>
+<dt>nf<span class="classifier">int</span></dt><dd><p>Number of frequency points for spec</p>
+</dd>
+<dt>ntap<span class="classifier">int, optional```</span></dt><dd><p>Constant number of tapers to average from
+if &gt; 0  Constant value to be used
+if None kopt used
+if &lt;= 0 Use the kopt array instead</p>
+</dd>
+<dt>kopt<span class="classifier">ndarray, int [nf]</span></dt><dd><p>array of integers, with the number of tapers
+at each frequency.</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>spec<span class="classifier">ndarray (nf,4)       </span></dt><dd><p>the spectral estimates (first 2 columns)
+and the cross spectral estiamtes (last 2 columns)</p>
+</dd>
+</dl>
+<p><strong>References</strong></p>
+<blockquote>
+<div><p>Based on the sine multitaper code of R. L. Parker.</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.wt2dof">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">wt2dof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.wt2dof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the degrees of freedom of the multitaper based on the 
+weights of the different tapers.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>wt<span class="classifier">ndarray [nfft,kspec] </span></dt><dd><p>weights of the tapers at each frequency</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>se<span class="classifier">ndarray [nfft] </span></dt><dd><p>degrees of freedom at each frequency</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.xint">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">xint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.xint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quadrature by Ierley’s method of Chebychev sampling.</p>
+<p><em>Parameters</em></p>
+<dl class="simple">
+<dt>a<span class="classifier">float</span></dt><dd><p>upper limit of integration</p>
+</dd>
+<dt>b<span class="classifier">float</span></dt><dd><p>upper limit of integration</p>
+</dd>
+<dt>tol<span class="classifier">float</span></dt><dd><p>tolerance for integration</p>
+</dd>
+<dt>vn<span class="classifier">ndarray</span></dt><dd><p>taper or Slepian sequence to convert-integrate</p>
+</dd>
+<dt>npts<span class="classifier">int</span></dt><dd><p>number of points of tapers</p>
+</dd>
+</dl>
+<p><em>Notes</em></p>
+<p>This is a slight variation of Gleen Ierly’s code. What was
+mainly done, was to avoid use of common blocks, defining all
+variables and performing the numerical integration inside
+(previously done by function pssevf).</p>
+<p>Exponential convergence rate for analytic functions!  Much faster 
+than Romberg; competitive with Gauss integration, without awkward 
+weights.</p>
+<p>Integrates the function dpsw on (a, b) to absolute
+accuracy tol &gt; 0.</p>
+<p>the function in time is given by rpar with ipar points</p>
+<p>I removed the optional printing routine part of the code, 
+to make it easier to read. I also moved both nval, etol
+as normal variables inside the routine.</p>
+<p>nval = number of function calls made by routine
+etol = approximate magnitude of the error of the result</p>
+<dl>
+<dt>NB:  function set_xint is called once before  xint  to</dt><dd><p>provide quadrature samples and weights.</p>
+<p>I also altered the subroutine call, to get the weights
+and not save them in a common block, but get them 
+directly back.</p>
+</dd>
+</dl>
+<p>lomx=number of samples = 2**nomx</p>
+<p><em>Modified</em></p>
+<p>November 2004 (German A. Prieto)</p>
+<p><em>Calls</em></p>
+<p>utils.set_xint</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.yk_reshape">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">yk_reshape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yk_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcrit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.yk_reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>reshape the yk’s based on the F-test of line compenents</p>
+<p>Reshape eigenft’s around significant spectral lines
+The “significant” means above fcritical probability (def=0.95)
+If probability is large at neighbouring frequencies, code will 
+only remove the largest probability energy.</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>yk<span class="classifier">ndarray complex [nfft,kspec] </span></dt><dd><p>eigenft’s</p>
+</dd>
+<dt>vn<span class="classifier">ndarray [npts,kspec] </span></dt><dd><p>DPSS sequences</p>
+</dd>
+<dt>p<span class="classifier">ndarray optional [nfft] </span></dt><dd><p>F-test probabilities to find fcritical
+In None, it will be calculated</p>
+</dd>
+<dt>fcrit<span class="classifier">float optional</span></dt><dd><p>Probability value over which to reshape, default = 0.95</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>yk<span class="classifier">ndarray, complex [nfft,kspec]</span></dt><dd><p>Reshaped eigenft’s</p>
+</dd>
+<dt>sline<span class="classifier">ndarray [nfft]</span></dt><dd><p>Power spetrum of line components only</p>
+</dd>
+</dl>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>April 2006 (German A. Prieto)</p>
+</div></blockquote>
+<p><strong>Calls</strong></p>
+<blockquote>
+<div><p>ftest - if P is not present
+scipy.fft.fft</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">multitaper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mtspec.html">mtspec module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mtcross.html">mtcross module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">utils module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mtcross.html" title="previous chapter">mtcross module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, German A. Prieto.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

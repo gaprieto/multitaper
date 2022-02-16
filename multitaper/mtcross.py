@@ -1,12 +1,11 @@
 # Copyright 2022 Germán A. Prieto, MIT license
 """
 Module that contains all multivariate-multitaper codes. 
+
 Contains:
-   mt_cohe
-   mt_deconv
-   TO DO 
-      df_spec
-      wv_spec
+   - mt_cohe
+   - mt_deconv
+   - To do: wv_spec
 
 Module with routines for bi-variate multitaper spectrum estimation.
 Contains the main MTCross and SineCross classes where the estimates 
@@ -17,13 +16,15 @@ tranfer functions, etc.
 
 See module mtspec for univariate problems
 
-Classes:
+**Classes**
 
-    MTCross   - A class to represent Thomson's multitaper cross-spectra
-    SineCross - A class to represent Sine Multitaper cross-spectra
+    * MTCross   - A class to represent Thomson's multitaper cross-spectra
+    * SineCross - A class to represent Sine Multitaper cross-spectra
 
-Functions:
+**Functions**
     None
+
+|
 
 """
 
@@ -41,13 +42,14 @@ import multitaper.mtspec     as spec
 class MTCross:
 
     """
-    MTCross class
+    .. class:: MTCross
+
         A class for bi-variate Thomson multitaper estimates
 
-    Attibutes
-    ---------
+    **Attibutes**
 
-    - Parameters
+    *Parameters*
+
     npts   : int
         number of points of time series
     nfft   : int
@@ -57,7 +59,8 @@ class MTCross:
     kspec  : int
         number of tapers to use
 
-    - Time series
+    *Time series*
+
     x      : ndarray [npts]
         time series
     xvar   : float
@@ -65,7 +68,8 @@ class MTCross:
     dt     : float
         sampling interval
 
-    - Frequency vector
+    *Frequency vector*
+
     nf     : int
         number of unique frequency points of spectral 
         estimate, assuming real time series
@@ -74,14 +78,16 @@ class MTCross:
     df     : float
         frequncy sampling interval
 
-    - Method
+    *Method*
+
     iadapt : int
         defines methos to use
         0 - adaptive multitaper
         1 - unweighted, wt =1 for all tapers
         2 - wt by the eigenvalue of DPSS
 
-    - Spectral estimates
+    *Spectral estimates*
+
     Sxx : ndarray [nfft]
         Power spectrum of x time series
     Syy : ndarray [nfft]
@@ -101,30 +107,33 @@ class MTCross:
     wt : ndarray [nfft,kspec]
         weights for each eigencoefficient at each frequency
 
-    Methods
-    -------
+    **Methods**
 
-    init      : Constructor of the MTCross class
-    mt_deconv : Perform the deconvolution from the self.trf, by iFFT
-    mt_corr   : compute time-domain via iFFT of cross-spectrum, 
-                coherency, and transfer function
+       * init      : Constructor of the MTCross class
+       * mt_deconv : Perform the deconvolution from the self.trf, by iFFT
+       * mt_corr   : compute time-domain via iFFT of cross-spectrum, 
+                     coherency, and transfer function
 
-    Modified
-    --------
+    **Modified**
+    
 	German Prieto
 	January 2022
+
+    |
 
     """
 
     def __init__(self,x,y,nw=4,kspec=0,dt=1.0,nfft=0,iadapt=0,wl=0.0):
         """
         The constructor of the MTCross class.
+
         It performs main steps in bi-variate multitaper estimation, 
         including cross-spectrum, coherency and transfer function.
+        
         MTCross class variable with attributes described above. 
 
-        Parameters
-        ----------
+        **Parameters**
+        
         x : MTSpec class, or ndarray [npts,]
             Time series signal x.
             If ndarray, the MTSpec class is created.
@@ -152,6 +161,8 @@ class MTCross:
         wl : float, optional
             water-level for stabilizing deconvolution (transfer function).
             defined as proportion of mean power of Syy
+
+        |
 
         """
         
@@ -302,22 +313,17 @@ class MTCross:
         MTCross has already pre-computed the cross-spectrum and 
         the transfer function. 
 
-        Parameters
-        ----------
-        self : MTCross class
-
-        Returns
-        -------
+        **Returns**
+        
         dfun : ndarray [nfft]
             time domain of the transfer function. 
             delay time t=0 in centered in the middle.
 
-        References
-        ----------
+        **References**
+        
         The code more or less follows the paper
         Receiver Functions from multiple-taper spectral corre-
-        lation estimates
-        J. Park and V. Levin., BSSA 90#6 1507-1520
+        lation estimates. J. Park and V. Levin., BSSA 90#6 1507-1520
 
         It also uses the code based on dual frequency I created in
         GA Prieto, Vernon, FL , Masters, G, and Thomson, DJ (2005), 
@@ -325,6 +331,8 @@ class MTCross:
         Signals from Earthquake Records, Proceedings of the 
         Thirty-Ninth Asilomar Conference on Signals, Systems, and 
         Computers, Pacific Grove, CA., pp 938-941. 
+
+        | 
 
         """
 
@@ -346,17 +354,10 @@ class MTCross:
         coherency, and transfer function
  
         Cross spectrum, coherency and transfer function 
-        already pre-computed in self.
+        already pre-computed in MTCross.
 
-        MTCross has already pre-computed the cross-spectrum and 
-        the coherency and transfer function. 
-
-        Parameters
-        ----------
-        self : MTCross class
-
-        Returns
-        -------
+        **Returns**
+        
         xcorr : ndarray [nfft]
             time domain of the transfer function. 
         dcohy : ndarray [nfft]
@@ -366,19 +367,21 @@ class MTCross:
             
         Delay time t=0 in centered in the middle.
 
-        Notes
-        -----
-        The three correlation-based estimates in the time domain
-            correlation (cross-spectrum)
-            deconvolution (transfer function)
-            norm correlation (coherency)
-        Correlation:
-            Sxy = Sx*conj(Sy)
-        Deconvolution:
-            Sxy/Sy = Sx*conj(Sy)/Sy^2
-        Coherency
-            Sxy/sqrt(Sx*Sy)
+        **Notes**
         
+        The three correlation-based estimates in the time domain
+            - correlation (cross-spectrum)
+            - deconvolution (transfer function)
+            - norm correlation (coherency)
+        Correlation:
+            - Sxy = Sx*conj(Sy)
+        Deconvolution:
+            - Sxy/Sy = Sx*conj(Sy)/Sy^2
+        Coherency
+            - Sxy/sqrt(Sx*Sy)
+        
+        | 
+
         """
 
         nfft = self.nfft
@@ -406,83 +409,84 @@ class MTCross:
 class SineCross:
 
     """
-    SineCross class
+    .. class:: SineCross
+
         A class for bi-variate Sine multitaper estimates
 
-    Attibutes
-    ---------
+    **Attibutes**
+    
 
-    - Parameters
-    npts   : int
-        number of points of time series
-    nfft   : int
-        number of points of FFT. nfft = 2*npts
+    *Parameters*
+       npts   : int
+          number of points of time series
+       nfft   : int
+          number of points of FFT. nfft = 2*npts
 
-    - Time series
-    x      : ndarray [npts]
-        time series x
-    xvar   : float
-        variance of x time series
-    y      : ndarray [npts]
-        time series y
-    yvar   : float
-        variance of y time series
-    dt     : float
-        sampling interval
+    *Time series*
+       x      : ndarray [npts]
+          time series x
+       xvar   : float
+          variance of x time series
+       y      : ndarray [npts]
+          time series y
+       yvar   : float
+          variance of y time series
+       dt     : float
+          sampling interval
 
-    - Frequency vector
-    nf     : int
-        number of unique frequency points of spectral 
-        estimate, assuming real time series
-    freq   : ndarray [nfft]
-        frequency vector in Hz
-    df     : float
-        frequncy sampling interval
+    *Frequency vector*
+       nf     : int
+          number of unique frequency points of spectral 
+          estimate, assuming real time series
+       freq   : ndarray [nfft]
+          frequency vector in Hz
+       df     : float
+          frequncy sampling interval
 
-    - Method
-    ntap   : int
-        fixed number of tapers
-        if ntap<0, use kopt
-    kopt   : ndarray [nfft,1] 
-        number of tapers at each frequency
-    ntimes : int
-        number of max iterations to perform
-    ireal  : int
-        0 - real time series
-        1 - complex time series
+    *Method*
+       ntap   : int
+          fixed number of tapers
+          if ntap<0, use kopt
+       kopt   : ndarray [nfft,1] 
+          number of tapers at each frequency
+       ntimes : int
+          number of max iterations to perform
+       ireal  : int
+          0 - real time series
+          1 - complex time series
 
-    - Spectral estimates
-    cspec : ndarray, complex [nfft]
-        Coss-spectrum of x, y series
-    sxy : ndarray, complex [nfft]
-        Coss-spectrum of x, y series
-    cohe  : ndarray [nfft]
-        MSC, freq coherence. Normalized (0.0,1.0)
-    phase : ndarray [nfft]
-        the phase of the cross-spectrum    
-    gain : ndarray [nfft]
-        the gain for the two spectra    
-    cohy : ndarray, complex [nfft]
-        the complex coherency, normalized cross-spectrum 
-    trf  : ndarray, compolex [nfft]
-        the transfer function Sxy/(Syy_wl), with water-level optional
-    se : ndarray [nfft,1] 
-        degrees of freedom of estimate
-    conf : ndarray [nfft,]
-        confidence in cross-spectrum at each frequency
+    *Spectral estimates*
+       cspec : ndarray, complex [nfft]
+          Coss-spectrum of x, y series
+       sxy : ndarray, complex [nfft]
+          Coss-spectrum of x, y series
+       cohe  : ndarray [nfft]
+          MSC, freq coherence. Normalized (0.0,1.0)
+       phase : ndarray [nfft]
+          the phase of the cross-spectrum    
+       gain : ndarray [nfft]
+          the gain for the two spectra    
+       cohy : ndarray, complex [nfft]
+          the complex coherency, normalized cross-spectrum 
+       trf  : ndarray, compolex [nfft]
+          the transfer function Sxy/(Syy_wl), with water-level optional
+       se : ndarray [nfft,1] 
+          degrees of freedom of estimate
+       conf : ndarray [nfft,]
+          confidence in cross-spectrum at each frequency
 
-    Methods
-    -------
+    **Methods**
 
-    init      : Constructor of the SineCross class
-    mt_deconv : Perform the deconvolution from the self.trf, by iFFT
-    mt_corr   : compute time-domain via iFFT of cross-spectrum, 
-                coherency, and transfer function
+    - init      : Constructor of the SineCross class
+    - mt_deconv : Perform the deconvolution from the self.trf, by iFFT
+    - mt_corr   : compute time-domain via iFFT of cross-spectrum, 
+                  coherency, and transfer function
 
-    Modified
-    --------
-	German Prieto
-	January 2022
+    **Modified**
+
+	January 2022, German A. Prieto
+
+    |
 
     """
 
@@ -493,15 +497,8 @@ class SineCross:
         Performs the coherence and cross-spectrum estimation 
         by the sine multitaper method.
 
-        References
-        ----------
-        Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
 
-        Based on Bob Parker psd.f and cross.f codes. Most of the comments 
-        come from his documentation as well.
-
-        Parameters
-        ----------
+        **Parameters**
 
         x : MTSine class, or ndarray [npts,]
             Time series signal x.
@@ -519,6 +516,15 @@ class SineCross:
             sampling interval of time series
         p : float, optional
             proportion for confidence intervale estimation
+
+        **References**
+        
+        Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
+
+        Based on Bob Parker psd.f and cross.f codes. Most of the comments 
+        come from his documentation as well.
+
+        |
 
         """
         
@@ -690,15 +696,13 @@ class SineCross:
         SineCross has already pre-computed the cross-spectrum and 
         the transfer function. 
 
-        Parameters
-        ----------
-        self : SineCross class
-
-        Returns
-        -------
+        **Returns**
+        
         dfun : ndarray [nfft]
             time domain of the transfer function. 
             delay time t=0 in centered in the middle.
+
+        |
 
         """
 
@@ -728,17 +732,10 @@ class SineCross:
         coherency, and transfer function
  
         Cross spectrum, coherency and transfer function 
-        already pre-computed in self.
+        already pre-computed in SineCross class.
 
-        SineCross has already pre-computed the cross-spectrum and 
-        the coherency and transfer function. 
-
-        Parameters
-        ----------
-        self : SineCross class
-
-        Returns
-        -------
+        **Returns**
+        
         xcorr : ndarray [nfft]
             time domain of the transfer function. 
         dcohy : ndarray [nfft]
@@ -748,19 +745,21 @@ class SineCross:
             
         Delay time t=0 in centered in the middle.
 
-        Notes
-        -----
-        The three correlation-based estimates in the time domain
-            correlation (cross-spectrum)
-            deconvolution (transfer function)
-            norm correlation (coherency)
-        Correlation:
-            Sxy = Sx*conj(Sy)
-        Deconvolution:
-            Sxy/Sy = Sx*conj(Sy)/Sy^2
-        Coherency
-            Sxy/sqrt(Sx*Sy)
+        **Notes**
         
+        The three correlation-based estimates in the time domain
+            - correlation (cross-spectrum)
+            - deconvolution (transfer function)
+            - norm correlation (coherency)
+        Correlation:
+            - Sxy = Sx*conj(Sy)
+        Deconvolution:
+            - Sxy/Sy = Sx*conj(Sy)/Sy^2
+        Coherency
+            - Sxy/sqrt(Sx*Sy)
+        
+        |
+
         """
 
         nf    = self.nf

@@ -1,0 +1,654 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtspec module &#8212; multitaper 1.0.8 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mtcross module" href="mtcross.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mtspec">
+<span id="mtspec-module"></span><h1>mtspec module<a class="headerlink" href="#module-mtspec" title="Permalink to this headline">¶</a></h1>
+<p>Module with routines for univariate multitaper spectrum estimation (1D).
+Contains the main MTSpec and MTSine classes where the estimates 
+are made and stored.</p>
+<p>See module mtcross for bi-variate problems</p>
+<p><strong>Classes</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>MTSpec - A class to represent Thomson’s multitaper estimates</p></li>
+<li><p>MTSine - A class to represent Sine Multitaper estimates</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Functions</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>spectrogram - Computes a spectrogram with consecutive multitaper estimates.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtspec.MTSine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtspec.</span></span><span class="sig-name descname"><span class="pre">MTSine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="mtspec.MTSine.MTSpec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MTSpec</span></span><a class="headerlink" href="#mtspec.MTSine.MTSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for univariate Thomson multitaper estimates</p>
+</dd></dl>
+
+<p><strong>Attibutes</strong></p>
+<dl class="simple">
+<dt><em>Parameters</em></dt><dd><dl class="simple">
+<dt>npts<span class="classifier">int</span></dt><dd><p>number of points of time series</p>
+</dd>
+<dt>nfft<span class="classifier">int</span></dt><dd><p>number of points of FFT. nfft = 2*npts</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Time series</em></dt><dd><dl class="simple">
+<dt>x<span class="classifier">ndarray [npts]</span></dt><dd><p>time series</p>
+</dd>
+<dt>xvar<span class="classifier">float</span></dt><dd><p>variance of time series</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Frequency vector</em></dt><dd><dl class="simple">
+<dt>nf<span class="classifier">int</span></dt><dd><p>number of unique frequency points of spectral 
+estimate, assuming real time series</p>
+</dd>
+<dt>freq<span class="classifier">ndarray [nfft]</span></dt><dd><p>frequency vector in Hz</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>frequncy sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Method</em></dt><dd><dl class="simple">
+<dt>ntap<span class="classifier">int</span></dt><dd><p>fixed number of tapers
+if ntap&lt;0, use kopt</p>
+</dd>
+<dt>kopt<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>number of tapers at each frequency</p>
+</dd>
+<dt>ntimes<span class="classifier">int</span></dt><dd><p>number of max iterations to perform</p>
+</dd>
+<dt>ireal<span class="classifier">int</span></dt><dd><p>0 - real time series
+1 - complex time series</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Spectral estimates</em></dt><dd><dl class="simple">
+<dt>spec<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>multitaper estimate</p>
+</dd>
+<dt>err<span class="classifier">ndarray [nfft,2]</span></dt><dd><p>1-std confidence interval of spectral estimate
+simple dof estimate</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><strong>Notes</strong></p>
+<p>The class is in charge of estimating the adaptive sine 
+multitaper as in Riedel and Sidorenko (1995). 
+This is done by performing a MSE adaptive estimation. First
+a pilot spectral estimate is used, and S” is estimated, in 
+order to get te number of tapers to use, using (13) of 
+R &amp; S for a min square error spectrum.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSine.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSine.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the PSD estimation by the sine multitaper method</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt>x<span class="classifier">ndarray [npts]   </span></dt><dd><p>real, data vector</p>
+</dd>
+<dt>ntap<span class="classifier">int, optional</span></dt><dd><p>constant number of tapers (def = 0)</p>
+</dd>
+<dt>ntimes<span class="classifier">int, optional</span></dt><dd><p>number of iterations to perform</p>
+</dd>
+<dt>fact<span class="classifier">float, optional</span></dt><dd><p>degree of smoothing (def = 1.)</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>sampling interval of time series</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Notes</strong></p>
+<p>This function is in charge of estimating the adaptive sine 
+multitaper as in Riedel and Sidorenko (1995). 
+This is done by performing a MSE adaptive estimation. First
+a pilot spectral estimate is used, and S” is estimated, in 
+order to get te number of tapers to use, using (13) of 
+R &amp; S for a min square error spectrum.</p>
+<p>Unlike the prolate spheroidal multitapers, the sine multitaper 
+adaptive process introduces a variable resolution and error in 
+the frequency domain. Complete error information is contained 
+in the output variables file as the corridor of 1-standard-deviation 
+errors, and in K, the number of tapers used at each frequency.
+The errors are estimated in the simplest way, from the number of 
+degrees of freedom (two per taper), not by jack-knifing. The 
+frequency resolution is found from K*fN/Nf where fN is the Nyquist 
+frequency and Nf is the number of frequencies estimated.
+The adaptive process used is as follows. A quadratic fit to the
+log PSD within an adaptively determined frequency band is used 
+to find an estimate of the local second derivative of the 
+spectrum. This is used in an equation like R &amp; S (13) for the 
+MSE taper number, with the difference that a parabolic weighting 
+is applied with increasing taper order. Because the FFTs of the 
+tapered series can be found by resampling the FFT of the original 
+time series (doubled in length and padded with zeros) only one FFT 
+is required per series, no matter how many tapers are used. This 
+makes the program fast. Compared with the Thomson multitaper 
+programs, this code is not only fast but simple and short. The 
+spectra associated with the sine tapers are weighted before 
+averaging with a parabolically varying weight. The expression 
+for the optimal number of tapers given by R &amp; S must be modified
+since it gives an unbounded result near points where S” vanishes,
+which happens at many points in most spectra. This program 
+restricts the rate of growth of the number of tapers so that a 
+neighboring covering interval estimate is never completely 
+contained in the next such interval.</p>
+<p>This method SHOULD not be used for sharp cutoffs or deep 
+valleys, or small sample sizes. Instead use Thomson multitaper
+in mtspec in this same library.</p>
+<p><strong>References</strong></p>
+<p>Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995</p>
+<p>Based on Bob Parker psd.f codes. Most of the comments come 
+his documentation as well.</p>
+<p><strong>Modified</strong></p>
+<p>September 22 2005</p>
+<p><strong>Calls</strong></p>
+<p>utils.quick, utils.adapt</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mtspec.MTSpec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtspec.</span></span><span class="sig-name descname"><span class="pre">MTSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<blockquote>
+<div><dl class="py class">
+<dt class="sig sig-object py" id="mtspec.MTSpec.MTSpec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MTSpec</span></span><a class="headerlink" href="#mtspec.MTSpec.MTSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for univariate Thomson multitaper estimates</p>
+</dd></dl>
+
+<p><strong>Attibutes</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt><em>Parameters</em></dt><dd><dl class="simple">
+<dt>npts<span class="classifier">int</span></dt><dd><p>number of points of time series</p>
+</dd>
+<dt>nfft<span class="classifier">int</span></dt><dd><p>number of points of FFT. Dafault adds padding.</p>
+</dd>
+<dt>nw<span class="classifier">flaot</span></dt><dd><p>time-bandwidth product</p>
+</dd>
+<dt>kspec<span class="classifier">int</span></dt><dd><p>number of tapers to use</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Time series</em></dt><dd><dl class="simple">
+<dt>x<span class="classifier">ndarray [npts]</span></dt><dd><p>time series</p>
+</dd>
+<dt>xvar<span class="classifier">float</span></dt><dd><p>variance of time series</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Frequency vector</em></dt><dd><dl class="simple">
+<dt>nf<span class="classifier">int</span></dt><dd><p>number of unique frequency points of spectral 
+estimate, assuming real time series</p>
+</dd>
+<dt>freq<span class="classifier">ndarray [nfft]</span></dt><dd><p>frequency vector in Hz</p>
+</dd>
+<dt>df<span class="classifier">float</span></dt><dd><p>frequncy sampling interval</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Method</em></dt><dd><dl class="simple">
+<dt>iadapt<span class="classifier">int</span></dt><dd><p>defines methos to use
+0 - adaptive multitaper
+1 - unweighted, wt =1 for all tapers
+2 - wt by the eigenvalue of DPSS</p>
+</dd>
+<dt>ireal<span class="classifier">int</span></dt><dd><p>0 - real time series
+1 - complex time series</p>
+</dd>
+</dl>
+</dd>
+<dt><em>DPSS tapers and eigenvalues</em></dt><dd><dl class="simple">
+<dt>vn<span class="classifier">ndarray [npts,kspec]</span></dt><dd><p>Slepian sequences</p>
+</dd>
+<dt>lamb<span class="classifier">ndarray [kspec]</span></dt><dd><p>Eigenvalues of Slepian sequences</p>
+</dd>
+</dl>
+</dd>
+<dt><em>Spectral estimates</em></dt><dd><dl class="simple">
+<dt>yk<span class="classifier">complex ndarray [nfft,kspec]</span></dt><dd><p>eigencoefficients, fft of tapered series</p>
+</dd>
+<dt>sk<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>eigenspectra, power spectra for each yk</p>
+</dd>
+<dt>spec<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>multitaper estimate</p>
+</dd>
+<dt>se<span class="classifier">ndarray [nfft,1] </span></dt><dd><p>degrees of freedom of estimate</p>
+</dd>
+<dt>wt<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>weights for each eigencoefficient at each frequency</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Methods</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>init     : Constructor of the MTSpec class</p></li>
+<li><p>rspec    : returns the positive frequency of the spectra only</p></li>
+<li><p>reshape  : reshape yk’s based on F-test of line components</p></li>
+<li><p>jackspec : estimate 95% confidence interval of multitaper estimate</p></li>
+<li><p>qiinv    : the quadratic inverse spectral estimate</p></li>
+<li><p>ftest    : F-test of line components in the spectra</p></li>
+<li><p>df_spec  : dual-frequency autospectra</p></li>
+</ul>
+</div></blockquote>
+<p><strong>References</strong></p>
+<p>Based on David J. Thomson’s codes, Alan Chave and Thomson’s Codes and
+partial codes from EISPACK, Robert L. Parker and Glenn Ierley from
+Scripps Institution of Oceanography. And my own Fortran90 library.</p>
+<p><strong>Notes</strong></p>
+<p>The class is in charge of estimating the adaptive weigthed 
+multitaper spectrum, as in Thomson 1982. 
+This is done by estimating the dpss (discrete prolate spheroidal 
+sequences), multiplying each of the kspec tapers with the data 
+series, take the fft, and using the adaptive scheme for a better
+estimation.</p>
+<p>As a by product of the spectrum (spec), all intermediate steps 
+are retained, which can be used for bi-variate analysis, deconvolotuion, 
+returning to the time domain, etc. 
+By-products include the complex information in yk, the eigenspectra sk, 
+the jackknife 95% confidence intervals (spec_ci), the degrees 
+of freedom (se) and the weigths wt(nf,kspec) used.
+See below for a complete list.</p>
+<p><strong>Modified</strong></p>
+<blockquote>
+<div><p>January 2022 (German Prieto)</p>
+</div></blockquote>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The constructor of the <strong>MTSpec</strong> class.</p>
+<p>It performs main steps in multitaper estimation, saving the
+MTSpec class variable with attributes described above.</p>
+<p>To use for first time given a time series <cite>x</cite>:</p>
+<blockquote>
+<div><p>psd = MTSpec(x,nw,kspec,dt,iadapt)</p>
+</div></blockquote>
+<p><em>Parameters</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>x<span class="classifier">ndarray [npts,]</span></dt><dd><p>Time series to analyze</p>
+</dd>
+<dt>nw<span class="classifier">float, optional</span></dt><dd><p>time bandwidth product, default = 4</p>
+</dd>
+<dt>kspec<span class="classifier">int, optional</span></dt><dd><p>number of tapers, default = 2*nw-1</p>
+</dd>
+<dt>dt<span class="classifier">float, optional</span></dt><dd><p>sampling interval of x, default = 1.0</p>
+</dd>
+<dt>nfft<span class="classifier">int, optional</span></dt><dd><p>number of frequency points for FFT, allowing for padding
+default = 2*npts+1</p>
+</dd>
+<dt>iadapt<span class="classifier">int, optional</span></dt><dd><p>defines methos to use, default = 0
+0 - adaptive multitaper
+1 - unweighted, wt =1 for all tapers
+2 - wt by the eigenvalue of DPSS</p>
+</dd>
+<dt>vn<span class="classifier">ndarray [npts,kspec], optional</span></dt><dd><p>Slepian sequences, can be precomputed to save time</p>
+</dd>
+<dt>lamb<span class="classifier">ndarray [kspec], optional</span></dt><dd><p>Eigenvalues of DPSS, can be precomputed to save time</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.df_spec">
+<span class="sig-name descname"><span class="pre">df_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.df_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the dual-frequency spectrum of a signal with itself.</p>
+<p><em>Returns</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>df_spec<span class="classifier">ndarray complex, 2D (nf,nf)</span></dt><dd><p>the complex dual-frequency cross-spectrum. Not normalized</p>
+</dd>
+<dt>df_cohe<span class="classifier">ndarray, 2D (nf,nf)</span></dt><dd><p>MSC, dual-freq coherence matrix. Normalized (0.0,1.0)</p>
+</dd>
+<dt>df_phase<span class="classifier">ndarray, 2D (nf,nf)</span></dt><dd><p>the dual-frequency phase</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>Calls</em></p>
+<blockquote>
+<div><p>utils.df_spec</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.ftest">
+<span class="sig-name descname"><span class="pre">ftest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.ftest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the F test for a line component</p>
+<p>Computes F-test for single spectral line components
+at the frequency bins given in the MTSpec class.</p>
+<p><strong>Returns</strong></p>
+<blockquote>
+<div><p>F : ndarray [nfft]
+vector of f test values, real
+p : ndarray [nfft]
+vector with probability of line component</p>
+</div></blockquote>
+<p><strong>Calls</strong></p>
+<p>utils.f_test</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.jackspec">
+<span class="sig-name descname"><span class="pre">jackspec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.jackspec" title="Permalink to this definition">¶</a></dt>
+<dd><p>code to calculate adaptively weighted jackknifed 95% confidence limits</p>
+<p><em>Returns</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>spec_ci<span class="classifier">ndarray [nfft,2]</span></dt><dd><p>real array of jackknife error estimates, with 5 and 95%
+confidence intervals of the spectrum.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>Calls</em></p>
+<blockquote>
+<div><p>utils.jackspec</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.qiinv">
+<span class="sig-name descname"><span class="pre">qiinv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.qiinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to calculate the Quadratic Spectrum using the method 
+developed by Prieto et al. (2007).</p>
+<p>The first 2 derivatives of the spectrum are estimated and the 
+bias associated with curvature (2nd derivative) is reduced.</p>
+<p>Calculate the Stationary Inverse Theory Spectrum.
+Basically, compute the spectrum inside the innerband.</p>
+<p>This approach is very similar to D.J. Thomson (1990).</p>
+<p><em>Returns</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>qispec<span class="classifier">ndarray [nfft,0]</span></dt><dd><p>the QI spectrum estimate</p>
+</dd>
+<dt>ds<span class="classifier">ndarray [nfft,0]        </span></dt><dd><p>the estimate of the first derivative</p>
+</dd>
+<dt>dds<span class="classifier">ndarray [nfft,0]       </span></dt><dd><p>the estimate of the second derivative</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>References</em></p>
+<blockquote>
+<div><p>G. A. Prieto, R. L. Parker, D. J. Thomson, F. L. Vernon, 
+and R. L. Graham (2007), Reducing the bias of multitaper 
+spectrum estimates,  Geophys. J. Int., 171, 1269-1281. 
+doi: 10.1111/j.1365-246X.2007.03592.x.</p>
+</div></blockquote>
+<p><em>Calls</em></p>
+<blockquote>
+<div><p>utils.qiinv</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.reshape">
+<span class="sig-name descname"><span class="pre">reshape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcrit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshape eigenft’s (yk) around significant spectral lines
+The “significant” means above fcritical probability (0.95)
+If probability is large at neighbouring frequencies, I will 
+only remove the largest probability energy.</p>
+<p>Returns recalculated yk, sk, spec, wt, and se</p>
+<p><em>Parameters</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>fcrit<span class="classifier">float optional</span></dt><dd><p>Probability value over which to reshape, default = 0.95</p>
+</dd>
+<dt>p<span class="classifier">ndarray optional [nfft] </span></dt><dd><p>F-test probabilities to find fcritical
+If None, it will be calculated</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>Returns</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>respec<span class="classifier">ndarray [nfft]</span></dt><dd><p>The reshaped PSD estimate</p>
+</dd>
+<dt>spec<span class="classifier">ndarray [nfft]</span></dt><dd><p>the PSD without the line components</p>
+</dd>
+<dt>yk<span class="classifier">ndarray [nfft,kspec]</span></dt><dd><p>the eigenft’s without line components</p>
+</dd>
+<dt>sline<span class="classifier">ndarray [nfft]</span></dt><dd><p>the PSD of the line components only</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><em>Calls</em></p>
+<blockquote>
+<div><p>utils.yk_reshape</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtspec.MTSpec.rspec">
+<span class="sig-name descname"><span class="pre">rspec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.MTSpec.rspec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the spetra at positive frequencies, checking that 
+a real input signal was used.</p>
+<p><em>Parameters</em></p>
+<blockquote>
+<div><dl class="simple">
+<dt>args<span class="classifier">ndarray</span></dt><dd><p>another array to return the positive frequencies. 
+Could be qispec, spec_ci, etc.</p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mtspec.spectrogram">
+<span class="sig-prename descclassname"><span class="pre">mtspec.</span></span><span class="sig-name descname"><span class="pre">spectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">twin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">olap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kspec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iadapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtspec.spectrogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a spectrogram with consecutive multitaper estimates.
+Returns both Thomson’s multitaper and the Quadratic multitaper estimate</p>
+<p><strong>Parameters</strong></p>
+<dl class="simple">
+<dt>data<span class="classifier">array_like (npts,)</span></dt><dd><p>Time series or sequence</p>
+</dd>
+<dt>dt<span class="classifier">float</span></dt><dd><p>Sampling interval in seconds of the time series.</p>
+</dd>
+<dt>twin<span class="classifier">float</span></dt><dd><p>Time duration in seconds of each segment for a single multitaper estimate.</p>
+</dd>
+<dt>olap<span class="classifier">float, optional</span></dt><dd><p>Overlap requested for the segment in building the spectrogram. 
+Defaults = 0.5, values must be (0.0 - 0.99).
+Overlap rounds to the nearest integer point.</p>
+</dd>
+<dt>nw<span class="classifier">float, optional</span></dt><dd><p>Time-bandwidth product for Thomson’s multitaper algorithm.
+Default = 3.5</p>
+</dd>
+<dt>kspec<span class="classifier">int, optional</span></dt><dd><p>Number of tapers for avearaging the multitaper estimate.
+Default = 5</p>
+</dd>
+<dt>fmin<span class="classifier">float, optional</span></dt><dd><p>Minimum frequency to estimate the spectrogram, otherwise returns the 
+entire spectrogram matrix.
+Default = 0.0 Hz</p>
+</dd>
+<dt>fmax<span class="classifier">float, optional</span></dt><dd><p>Maximum frequency to estimate the spectrogram, otherwise returns the
+entire spectrogram matrix. 
+Default = 0.5/dt Hz (Nyquist frequency)</p>
+</dd>
+<dt>iadapt<span class="classifier">integer, optional</span></dt><dd><p>User defined, determines which method for multitaper averaging to use. 
+Default = 0
+0 - Adaptive multitaper
+1 - Eigenvalue weights
+2 - Constant weighting</p>
+</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="simple">
+<dt>f<span class="classifier">ndarray</span></dt><dd><p>Array of sample frequencies.</p>
+</dd>
+<dt>t<span class="classifier">ndarray</span></dt><dd><p>Array of segment times.</p>
+</dd>
+<dt>Quad<span class="classifier">ndarray</span></dt><dd><p>Spectrogram of x using the quadratic multitaper estimate.</p>
+</dd>
+<dt>MT<span class="classifier">ndarray</span></dt><dd><p>Spectrogram of x using Thomson’s multitaper estimate.</p>
+</dd>
+</dl>
+<p>By default, the last axis of Quad/MT corresponds to the segment times.</p>
+<p><strong>See Also</strong></p>
+<p>MTSpec: Multitaper estimate of a time series.</p>
+<p><strong>Notes</strong></p>
+<p>The code assumes a real input signals and thus mainly returns the positive 
+frequencies. For a complex input signals, code qould require adaptation.</p>
+<p><strong>References</strong></p>
+<blockquote>
+<div><p>Prieto, G.A. (2022). The multitaper spectrum analysis package in Python.
+Seism. Res. Lett In review.</p>
+</div></blockquote>
+<p><strong>Examples</strong></p>
+<p>To do</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">multitaper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">mtspec module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mtcross.html">mtcross module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="mtcross.html" title="next chapter">mtcross module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, German A. Prieto.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/mtspec.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
