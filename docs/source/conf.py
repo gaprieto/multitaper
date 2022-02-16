@@ -15,7 +15,8 @@ import sys
 sys.path.insert(0, os.path.abspath('../../multitaper'))
 
 # -- Mock modules ------------------------------------------------------------
-autodoc_mock_imports = ['_multitaper']
+autodoc_mock_imports = ['multitaper','multitaper.mtcross','multitaper.mtspec',
+           'multitaper.utils']
 
 # -- Project information -----------------------------------------------------
 
