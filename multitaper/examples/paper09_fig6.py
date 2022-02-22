@@ -23,6 +23,8 @@ fname2 = 'ADO.dat'
 x    = utils.get_data(fname1)
 y    = utils.get_data(fname2)
 
+print(np.shape(x),np.shape(y))
+
 #------------------------------------------------
 # Get MTSPEC
 #     Get reshape spectrum with F test

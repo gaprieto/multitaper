@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="multitaper",
-    version="1.1.0",
+    version="1.1.1",
     author="German A. Prieto ",
     author_email="gaprietogo@unal.edu.co",
     description="Multitaper codes translated into Python",

@@ -47,6 +47,9 @@ The modules not only includes power spectral density (PSD) estimation with confi
    - Complete (almost complete) documentation, via Sphinx.
    - All comments by reviewers addressed
    - To do: improve Python standard for loops (improve speed). 
+- v1.1.1 
+   - Replaced some for-loops with faster numpy code
+   - More to be done.
 
 # Documentation
 - Web page (https://multitaper.readthedocs.io) created using Sphinx and published via readthedocs.

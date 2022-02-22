@@ -339,7 +339,7 @@ def dpss_ev(vn,w,atol=1e-14):
     lamb = np.zeros(kspec)
     for k in range(kspec):
 
-      result = xint(0.0,w,atol,vn[:,k],npts)
+      result  = xint(0.0,w,atol,vn[:,k],npts)
       lamb[k] = 2.0*result
 
     return lamb 
@@ -384,6 +384,7 @@ def dpss(npts,nw,kspec=None):
     **Modified**
     
 	December 2020
+    February 2022 - Changed a for loop for a direct np.sum().
 
     **Calls**
     
@@ -433,12 +434,16 @@ def dpss(npts,nw,kspec=None):
             v[:,k] = v[:,k]*np.sqrt(float(nint)/float(npts))
 
     #-----------------------------------------------------
-    # Normmalize functions
+    # Normalize functions
     #-----------------------------------------------------
 
-    for i in range(kspec):
-        vnorm  = np.sqrt(np.sum(v[:,i]**2))
-        v[:,i] = v[:,i]/vnorm
+    vnorm  = np.sqrt(np.sum(v**2,axis=0))
+    v      = v/vnorm[None,:]
+
+    # Replaced for loop
+    #for i in range(kspec):
+    #    vnorm  = np.sqrt(np.sum(v[:,i]**2))
+    #    v[:,i] = v[:,i]/vnorm
 
     #-----------------------------------------------------
     # Get positive standard
@@ -663,8 +668,9 @@ def eigenspec(x,vn,lamb,nfft):
 
     **Modified**
     
- 	German Prieto
-	November 2004
+ 	February 2022. Changed a for loop for xtap
+    
+    German Prieto, November 2004
 
     **Notes**
     
@@ -700,11 +706,17 @@ def eigenspec(x,vn,lamb,nfft):
     # Define matrices to be used
     #-----------------------------------------------------------------
 
-    xtap   = np.zeros((npts,kspec), dtype=float)
-    for i in range(kspec):
-        xtap[:,i]     = vn[:,i]*x[:,0]
+    x2    = np.tile(x,(1,kspec))
+    xtap = vn*x2
+
+#    xtap   = np.zeros((npts,kspec), dtype=float)
+#    for i in range(kspec):
+#        xtap[:,i]     = vn[:,i]*x[:,0]
+
+    # Get eigenspec Yk's and Sk's
     yk  = scipy.fft.fft(xtap,axis=0,n=nfft,workers=kspec)
     sk  = np.abs(yk)**2
+
 
     return yk, sk
 
@@ -762,6 +774,8 @@ def adaptspec(yk,sk,lamb,iadapt=0):
     This can be used in transfer functions and deconvolution, 
     where adaptive methods might not be necesary. 
 
+    February 2022. Now calculating adapt weights without for loop. 
+
     **Calls**
     
     nothing
@@ -775,18 +789,15 @@ def adaptspec(yk,sk,lamb,iadapt=0):
     kspec = np.shape(yk)[1]
     lamb1 = 1.0-lamb
 
-    sbar = np.zeros((nfft,1),     dtype=float)
-    se   = np.zeros((nfft,1),     dtype=float)
-    wt   = np.zeros((nfft,kspec), dtype=float)
-    skw  = np.zeros((nfft,kspec), dtype=float)
-
     #----------------------------------------------------
     # Simple average, not adaptive. Weight=1
     #    iadapt=1
     #----------------------------------------------------
 
     if (iadapt==1):
-        wt = wt + 1.0
+        wt        = np.ones((nfft,kspec), dtype=float)
+        se        = np.zeros((nfft,1),     dtype=float)
+        sbar      = np.zeros((nfft,1),     dtype=float)
         sbar[:,0] = np.sum(sk,axis=1)/ float(kspec)
         se        = se + 2.0 * float(kspec)
         spec      = sbar 
@@ -799,14 +810,15 @@ def adaptspec(yk,sk,lamb,iadapt=0):
 
 
     if (iadapt==2):
+        wt   = np.zeros((nfft,kspec), dtype=float)
         for k in range(kspec):
             wt[:,k]  = lamb[k]
             skw[:,k] = wt[:,k]**2 * sk[:,k]   
 
         wtsum     = np.sum(wt**2,axis=1)
         skwsum    = np.sum(skw,axis=1)
-        sbar[:,0] = skwsum / wtsum
-        spec      = sbar 
+        sbar      = skwsum / wtsum
+        spec      = sbar[:,None] 
 
         #------------------------------------------------------------
         # Number of Degrees of freedom
@@ -815,6 +827,9 @@ def adaptspec(yk,sk,lamb,iadapt=0):
         se = wt2dof(wt)
         
         return spec, se, wt
+
+#    skw  = np.zeros((nfft,kspec), dtype=float)
+#    wt   = np.zeros((nfft,kspec), dtype=float)
 
     #----------------------------------------
     # Freq sampling (assume unit sampling)
@@ -828,7 +843,7 @@ def adaptspec(yk,sk,lamb,iadapt=0):
     varsk  = np.sum(sk,axis=0)*df
     dvar   = np.mean(varsk)
 
-    bk	  = dvar  * lamb1  # Eq 5.1b Thomson
+    bk	   = dvar  * lamb1  # Eq 5.1b Thomson
     sqlamb = np.sqrt(lamb)
 
     #-------------------------------------------------
@@ -837,36 +852,44 @@ def adaptspec(yk,sk,lamb,iadapt=0):
 
     rerr = 9.5e-7	# Value used in F90 codes check
 
-    sbar[:,0] = (sk[:,0] + sk[:,1])/2.0
-    spec = sbar
+    sbar = (sk[:,0] + sk[:,1])/2.0
+    spec = sbar[:,None]
     
     for i in range(mloop):
     
         slast = np.copy(sbar)
 
-        for k in range(kspec):
-            wt[:,k]  = sqlamb[k]*sbar[:,0] /(lamb[k]*sbar[:,0] + bk[k])
-            wt[:,k]  = np.minimum(wt[:,k],1.0)
-            skw[:,k] = wt[:,k]**2 * sk[:,k]   
+#        for k in range(kspec):
+#            wt[:,k]  = sqlamb[k]*sbar /(lamb[k]*sbar + bk[k])
+#            wt[:,k]  = np.minimum(wt[:,k],1.0)
+#            skw[:,k] = wt[:,k]**2 * sk[:,k]   
+#
+#        wtsum     = np.sum(wt**2,axis=1)
+#        skwsum    = np.sum(skw,axis=1)
+#        sbar      = skwsum / wtsum
 
-        wtsum     = np.sum(wt**2,axis=1)
-        skwsum    = np.sum(skw,axis=1)
-        sbar[:,0] = skwsum / wtsum
+        wt1     = sqlamb[None,:]*sbar[:,None]
+        wt2     = (lamb[None,:]*sbar[:,None]+bk[None,:])
+        wt      = np.minimum(wt1/wt2,1.0)
+        skw     = wt**2 * sk   
+        wtsum   = np.sum(wt**2,axis=1)
+        skwsum  = np.sum(skw,axis=1)
+        sbar    = skwsum / wtsum
 
         oerr = np.max(np.abs((sbar-slast)/(sbar+slast)))
 
         if (i==mloop): 
-            spec = sbar
+            spec = sbar[:,None]
             print('adaptspec did not converge, rerr = ',oerr, rerr)
             break
         
         if (oerr > rerr):
             continue
 
-        spec = sbar
+        spec = sbar[:,None]
         break
 
-    spec = sbar
+    spec = sbar[:,None]
     #---------
 
     #------------------------------------------------------------
@@ -1482,6 +1505,10 @@ def wt2dof(wt):
     se : ndarray [nfft] 
         degrees of freedom at each frequency
 
+    **Modified**
+
+    February 2022, changed a for loop for direct numpy sum. 
+
     | 
 
     """
@@ -1493,11 +1520,14 @@ def wt2dof(wt):
     # Number of Degrees of freedom
     #------------------------------------------------------------
 
-    wt_dofs   = np.zeros((nfft,kspec), dtype=float)
-    for i in range(nfft):
-        wt_dofs[i,:] = wt[i,:]/np.sqrt(np.sum(wt[i,:]**2)/float(kspec))
-    wt_dofs = np.minimum(wt_dofs,1.0)
-    
+    wt1      = np.sqrt(np.sum(wt**2,axis=1)/float(kspec))
+    wt_dofs  = np.minimum(wt/wt1[:,None],1.0)
+
+    #wt_dofs   = np.zeros((nfft,kspec), dtype=float)
+    #for i in range(nfft):
+    #    wt_dofs[i,:] = wt[i,:]/np.sqrt(np.sum(wt[i,:]**2)/float(kspec))
+    #wt_dofs = np.minimum(wt_dofs,1.0)
+
     se = 2.0 * np.sum(wt_dofs**2, axis=1) 
 
     return se
@@ -1508,9 +1538,107 @@ def wt2dof(wt):
 
 #-------------------------------------------------------------------------
 # Dual-frequency spectrum
+#    Note: New version added, with np.tensordot, speeds up 10-100 fold
 #-------------------------------------------------------------------------
 
 def df_spec(x,y=None,fmin=None,fmax=None):
+    """
+    Dual frequency spectrum using one/two MTSPEC classes. 
+    For now, only positive frequencies are studied
+  
+    Construct the dual-frequency spectrum from the yk's and the 
+    weights of the usual multitaper spectrum estimation. 
+  
+    **Parameters**
+    
+    x : MTSpec class
+        variable with the multitaper information (yk's)
+    y : MTSpec class, optional
+        similar to x for a second time series
+        if y is None, auto-dual frequency is calculated.
+    fmin : float, optional
+        minimum frequency to calculate the DF spectrum
+    fmax : float, optional
+        minimum frequency to calculate the DF spectrum
+
+  
+    **Returns**
+    
+    df_spec : ndarray complex, 2D (nf,nf)
+        the complex dual-frequency cross-spectrum. Not normalized
+    df_cohe : ndarray, 2D (nf,nf)
+        MSC, dual-freq coherence matrix. Normalized (0.0,1.0)
+    df_phase : ndarray, 2D (nf,nf)
+        the dual-frequency phase
+
+    **Notes**
+    
+    both x and y need the same parameters (npts, kspec, etc.)
+
+    **Modified**
+    
+  	German Prieto, September 2005
+  
+  	German A. Prieto, September 2007
+  	
+    Slight rewrite to adjust to newer mtspec codes.
+
+  	German Prieto, February 2022
+
+    Speed up by simplifying for loops and using np.tensordot
+
+    **Calls**
+    
+    np.tensordot	
+
+    |
+
+    """
+
+    if (y is None):
+        y = x
+
+    kspec = x.kspec
+    nfft  = x.nfft
+    nf    = x.nf
+    freq  = x.freq[:,0]
+    if (fmin is None):
+        fmin = min(abs(freq))
+    if (fmax is None):
+        fmax = max(abs(freq))
+
+    # Select frequencies of interest
+    floc   = np.where((freq>=fmin) & (freq<=fmax))[0]
+    freq = freq[floc]
+    nf   = len(freq)
+
+    #------------------------------------------------------------
+    # Create the cross and/or auto spectra
+    #------------------------------------------------------------
+
+    # Unique weights (and degrees of freedom)
+    wt = np.minimum(x.wt,y.wt)
+
+    # Scale weights to keep power 
+    wt_scale = np.sqrt(np.sum(np.abs(wt)**2, axis=1))      
+    wt = wt/wt_scale[:,None]
+
+    # Weighted Yk's
+    dyk_x =  wt[floc,:] * x.yk[floc,:]
+    dyk_y =  wt[floc,:] * y.yk[floc,:]
+
+    # Auto and Cross spectrum
+    Sxx = np.sum(np.abs(dyk_x)**2, axis=1) 
+    Syy = np.sum(np.abs(dyk_y)**2, axis=1)
+    Pxy = np.outer(Sxx,Syy)
+
+    df_spec  = np.tensordot(dyk_x,np.conjugate(dyk_y),axes=(1,1))
+    df_cohe  = np.abs(df_spec**2)/Pxy
+    df_phase = np.arctan2(np.imag(df_spec),np.real(df_spec)) * 180.0/np.pi
+
+    return df_spec, df_cohe, df_phase, freq
+
+def df_spec_old(x,y=None,fmin=None,fmax=None):
     """
     Dual frequency spectrum using one/two MTSPEC classes. 
     For now, only positive frequencies are studied
