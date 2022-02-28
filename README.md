@@ -103,14 +103,14 @@ to reproduce the figures of the F90 paper (Prieto et al., 2009)
 and the Python version  (Prieto 2022 under review). Data used in the 
 examples is automatically downloaded from a Zenodo repository. 
 
-To download the example folder
+To download the example folder, then python code
 ```
 import multitaper.utils as utils
 utils.copy_examples()
 ``` 
-will create a folder `multitaper-examples/`. To run, just open in 
-Jupyter Notebooks or run the python scripts (with the `multitaper`
-codes previously installed).
+will create a folder `multitaper-examples/`. To run, install `matplotlib` and 
+`jupyter` using `conda` and open the notebooks or run the python scripts 
+(with the `multitaper` codes previously installed).
  
 # Citation:
 Please use this reference when citing the codes. 
