@@ -37,11 +37,9 @@ class MTSpec:
 
     """
 
-    .. class:: MTSpec
+    A class for univariate Thomson multitaper estimates
 
-       A class for univariate Thomson multitaper estimates
-
-    **Attibutes**
+    **Attributes**
 
        *Parameters*
           npts   : int
@@ -602,11 +600,10 @@ class MTSpec:
 class MTSine:
 
     """
-    .. class:: MTSpec
 
-       A class for univariate Thomson multitaper estimates
+    A class for univariate Thomson multitaper estimates
 
-    **Attibutes**
+    **Attributes**
 
     *Parameters*
        npts   : int

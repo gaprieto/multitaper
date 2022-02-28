@@ -42,11 +42,10 @@ import multitaper.mtspec     as spec
 class MTCross:
 
     """
-    .. class:: MTCross
 
-        A class for bi-variate Thomson multitaper estimates
+    A class for bi-variate Thomson multitaper estimates
 
-    **Attibutes**
+    **Attributes**
 
     *Parameters*
 
@@ -409,11 +408,10 @@ class MTCross:
 class SineCross:
 
     """
-    .. class:: SineCross
 
-        A class for bi-variate Sine multitaper estimates
+    A class for bi-variate Sine multitaper estimates
 
-    **Attibutes**
+    **Attributes**
     
 
     *Parameters*
