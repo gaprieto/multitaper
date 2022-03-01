@@ -1,9 +1,9 @@
 # Testing DPSS codes. 
 
-import multitaper.mtcross as cross
 import numpy as np
 import matplotlib.pyplot as plt
 import multitaper.utils  as utils
+from multitaper import MTCross, SineCross
 
 def Qi(nf,trf,cohe,freq):
 
@@ -97,11 +97,11 @@ print('npts, dt ', npts,dt)
 #------------------------------------------------
 
 print('----- Sine cross spectrum -------')
-Sxy  = cross.SineCross(x,y,ntap=10,dt=dt)
+Sxy  = SineCross(x,y,ntap=10,dt=dt)
 avper, sine_cavg = Qi(Sxy.nf,Sxy.trf,Sxy.cohe,Sxy.freq)
 
 print('----- MT cross spectrum -------')
-Pxy  = cross.MTCross(x,y,nw,kspec,dt)
+Pxy  = MTCross(x,y,nw,kspec,dt)
 avper, cavg = Qi(Pxy.nf,Pxy.trf,Pxy.cohe,Pxy.freq)
 
 fig = plt.figure(1,figsize=(10,8))

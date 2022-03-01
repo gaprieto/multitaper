@@ -60,7 +60,7 @@ The `multitaper` package is composed of a number of Python modules. As of Januar
 
 ### Dependencies
 
-You will need **Python 3.7+**. The following packages are required:
+You will need **Python 3.8+**. The following packages are automatically installed:
 
 - [`numpy`](http://numpy.org)
 - [`scipy`](https://scipy.org)
@@ -70,18 +70,18 @@ __Optional dependencies__ for plotting and example Notebooks:
 - [`jupyter`](https://jupyter.org/)
 - [`matplotlib`](https://matplotlib.org/)
 
-## With Conda:
+## I recommend creating a virtual environment before installing:
 ```python
-> conda install -c gprieto multitaper
-```
-## I recommend creating a virtual environment before:
-```python
-> conda create --name mtspec
+> conda create --name mtspec python=3.8
 > conda activate mtspec
+```
+
+## Install with Conda:
+```python
 > conda install -c gprieto multitaper
 ```
 
-## With pip:
+## Install with pip:
 ```python
 > pip install multitaper
 ```
@@ -103,14 +103,14 @@ to reproduce the figures of the F90 paper (Prieto et al., 2009)
 and the Python version  (Prieto 2022 under review). Data used in the 
 examples is automatically downloaded from a Zenodo repository. 
 
-To download the example folder
+To download the example folder, then python code
 ```
 import multitaper.utils as utils
 utils.copy_examples()
 ``` 
-will create a folder `multitaper-examples/`. To run, just open in 
-Jupyter Notebooks or run the python scripts (with the `multitaper`
-codes previously installed).
+will create a folder `multitaper-examples/`. To run, install `matplotlib` and 
+`jupyter` using `conda` and open the notebooks or run the python scripts 
+(with the `multitaper` codes previously installed).
  
 # Citation:
 Please use this reference when citing the codes. 

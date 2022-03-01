@@ -1,9 +1,9 @@
 # Testing DPSS codes. 
 
 import multitaper.utils  as utils
-import multitaper.mtspec as spec
 import numpy as np
 import matplotlib.pyplot as plt
+from multitaper import MTSpec
 
 #------------------------------------------------
 # Define filename and path
@@ -35,7 +35,7 @@ print('npts, dt ', npts,dt)
 #     Get QI spectrum
 #------------------------------------------------
 
-psd = spec.MTSpec(x,nw,kspec,dt,iadapt=0)
+psd = MTSpec(x,nw,kspec,dt,iadapt=0)
 
 print(type(psd))
 

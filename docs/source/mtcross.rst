@@ -2,8 +2,7 @@ mtcross module
 ==============
 
 .. automodule:: mtcross
-   :members: 
+   :members: MTCross, SineCross
    :undoc-members:
    :show-inheritance:
-   :special-members: __init__
 
