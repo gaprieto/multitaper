@@ -14,7 +14,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Operating System :: OS Independent",
     ],
-    install_requires=['numpy', 'scipy'],
     packages=find_packages(),
     package_data={
         "multitaper": [
@@ -25,4 +24,13 @@ setup(
         ]
     },
     python_requires=">=3.7",
-)   
+)
+
+
+#---------------------------------------------
+# On a Mac adding this creates a problem
+# but should be added for completeness.
+#
+#     install_requires=['numpy', 'scipy'],
+#
+#---------------------------------------------
