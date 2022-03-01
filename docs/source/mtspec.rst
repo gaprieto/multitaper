@@ -2,7 +2,7 @@ mtspec module
 =============
 
 .. automodule:: mtspec
-   :members: MTSpec, MTSine, spectrogram
+   :members: MTSine, MTSpec, spectrogram
    :undoc-members: 
    :show-inheritance:
 
