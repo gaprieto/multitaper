@@ -9,6 +9,7 @@ multitaper/utils.py
 multitaper.egg-info/PKG-INFO
 multitaper.egg-info/SOURCES.txt
 multitaper.egg-info/dependency_links.txt
+multitaper.egg-info/requires.txt
 multitaper.egg-info/top_level.txt
 multitaper/examples/mtspec_deconv.ipynb
 multitaper/examples/mtspec_dual_freq.ipynb
