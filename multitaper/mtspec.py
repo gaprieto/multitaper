@@ -98,7 +98,6 @@ class MTSpec:
 
     **Methods**
 
-       - init     : Constructor of the MTSpec class
        - rspec    : returns the positive frequency of the spectra only
        - reshape  : reshape yk's based on F-test of line components
        - jackspec : estimate 95% confidence interval of multitaper estimate
@@ -601,7 +600,7 @@ class MTSine:
 
     """
 
-    A class for univariate Thomson multitaper estimates
+    A class for sine multitaper estimates
 
     **Attributes**
 
@@ -649,12 +648,61 @@ class MTSine:
 
     **Notes**
     
-    The class is in charge of estimating the adaptive sine 
-    multitaper as in Riedel and Sidorenko (1995). 
-    This is done by performing a MSE adaptive estimation. First
-    a pilot spectral estimate is used, and S" is estimated, in 
-    order to get te number of tapers to use, using (13) of 
-    R & S for a min square error spectrum.
+      The class is in charge of estimating the adaptive sine 
+      multitaper as in Riedel and Sidorenko (1995). 
+      This is done by performing a MSE adaptive estimation. First
+      a pilot spectral estimate is used, and S" is estimated, in 
+      order to get te number of tapers to use, using (13) of 
+      R & S for a min square error spectrum.
+
+      Unlike the prolate spheroidal multitapers, the sine multitaper 
+      adaptive process introduces a variable resolution and error in 
+      the frequency domain. Complete error information is contained 
+      in the output variables file as the corridor of 1-standard-deviation 
+      errors, and in K, the number of tapers used at each frequency.
+      The errors are estimated in the simplest way, from the number of 
+      degrees of freedom (two per taper), not by jack-knifing. The 
+      frequency resolution is found from K*fN/Nf where fN is the Nyquist 
+      frequency and Nf is the number of frequencies estimated.
+      The adaptive process used is as follows. A quadratic fit to the
+      log PSD within an adaptively determined frequency band is used 
+      to find an estimate of the local second derivative of the 
+      spectrum. This is used in an equation like R & S (13) for the 
+      MSE taper number, with the difference that a parabolic weighting 
+      is applied with increasing taper order. Because the FFTs of the 
+      tapered series can be found by resampling the FFT of the original 
+      time series (doubled in length and padded with zeros) only one FFT 
+      is required per series, no matter how many tapers are used. This 
+      makes the program fast. Compared with the Thomson multitaper 
+      programs, this code is not only fast but simple and short. The 
+      spectra associated with the sine tapers are weighted before 
+      averaging with a parabolically varying weight. The expression 
+      for the optimal number of tapers given by R & S must be modified
+      since it gives an unbounded result near points where S" vanishes,
+      which happens at many points in most spectra. This program 
+      restricts the rate of growth of the number of tapers so that a 
+      neighboring covering interval estimate is never completely 
+      contained in the next such interval.
+
+      This method SHOULD not be used for sharp cutoffs or deep 
+      valleys, or small sample sizes. Instead use Thomson multitaper
+      in mtspec in this same library. 
+
+      **References**
+
+      Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
+
+      Based on Bob Parker psd.f codes. Most of the comments come 
+      from his documentation as well.
+
+      **Modified**
+
+      September 22 2005
+
+      **Calls**
+
+      utils.quick, utils.adapt
+
 
     |
 
@@ -687,55 +735,7 @@ class MTSine:
         order to get te number of tapers to use, using (13) of 
         R & S for a min square error spectrum. 
 
-        Unlike the prolate spheroidal multitapers, the sine multitaper 
-        adaptive process introduces a variable resolution and error in 
-        the frequency domain. Complete error information is contained 
-        in the output variables file as the corridor of 1-standard-deviation 
-        errors, and in K, the number of tapers used at each frequency.
-        The errors are estimated in the simplest way, from the number of 
-        degrees of freedom (two per taper), not by jack-knifing. The 
-        frequency resolution is found from K*fN/Nf where fN is the Nyquist 
-        frequency and Nf is the number of frequencies estimated.
-        The adaptive process used is as follows. A quadratic fit to the
-        log PSD within an adaptively determined frequency band is used 
-        to find an estimate of the local second derivative of the 
-        spectrum. This is used in an equation like R & S (13) for the 
-        MSE taper number, with the difference that a parabolic weighting 
-        is applied with increasing taper order. Because the FFTs of the 
-        tapered series can be found by resampling the FFT of the original 
-        time series (doubled in length and padded with zeros) only one FFT 
-        is required per series, no matter how many tapers are used. This 
-        makes the program fast. Compared with the Thomson multitaper 
-        programs, this code is not only fast but simple and short. The 
-        spectra associated with the sine tapers are weighted before 
-        averaging with a parabolically varying weight. The expression 
-        for the optimal number of tapers given by R & S must be modified
-        since it gives an unbounded result near points where S" vanishes,
-        which happens at many points in most spectra. This program 
-        restricts the rate of growth of the number of tapers so that a 
-        neighboring covering interval estimate is never completely 
-        contained in the next such interval.
-
-        This method SHOULD not be used for sharp cutoffs or deep 
-        valleys, or small sample sizes. Instead use Thomson multitaper
-        in mtspec in this same library. 
-
-        **References**
-        
-        Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
-
-        Based on Bob Parker psd.f codes. Most of the comments come 
-        his documentation as well.
-
       	
-        **Modified**
-    
-      	September 22 2005
-
-
-        **Calls**
-        
-        utils.quick, utils.adapt
      
         | 
         """
