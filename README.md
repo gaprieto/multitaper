@@ -92,7 +92,7 @@ __Optional dependencies__ for plotting and example Notebooks:
 ## Local install
 Download a copy of the codes from github 
 ```
-git clone https://github.com/gprieto/multitaper.git
+git clone https://github.com/gaprieto/multitaper.git
 ```
 or simply download ZIP file from https://github.com/gaprieto/multitaper
 and navigate to the directory and type
