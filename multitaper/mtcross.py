@@ -43,7 +43,9 @@ class MTCross:
 
     """
 
-    A class for bi-variate Thomson multitaper estimates
+    A class for bi-variate Thomson multitaper estimates. 
+    It performs main steps in bi-variate multitaper estimation, 
+    including cross-spectrum, coherency and transfer function.
 
     **Attributes**
 
@@ -84,6 +86,9 @@ class MTCross:
         0 - adaptive multitaper
         1 - unweighted, wt =1 for all tapers
         2 - wt by the eigenvalue of DPSS
+    wl : float, optional
+        water-level for stabilizing deconvolution (transfer function).
+        defined as proportion of mean power of Syy
 
     *Spectral estimates*
 
@@ -409,7 +414,9 @@ class SineCross:
 
     """
 
-    A class for bi-variate Sine multitaper estimates
+    A class for bi-variate Sine multitaper estimates.
+    Performs the coherence and cross-spectrum estimation 
+    using the sine multitaper method.
 
     **Attributes**
     
@@ -479,6 +486,13 @@ class SineCross:
     - mt_deconv : Perform the deconvolution from the self.trf, by iFFT
     - mt_corr   : compute time-domain via iFFT of cross-spectrum, 
                   coherency, and transfer function
+
+    **References**
+    
+    Riedel and Sidorenko, IEEE Tr. Sig. Pr, 43, 188, 1995
+
+    Based on Bob Parker psd.f and cross.f codes. Most of the comments 
+    come from his documentation as well.
 
     **Modified**
 
