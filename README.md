@@ -70,7 +70,7 @@ __Optional dependencies__ for plotting and example Notebooks:
 - [`jupyter`](https://jupyter.org/)
 - [`matplotlib`](https://matplotlib.org/)
 
-## I recommend creating a virtual environment before:
+## I recommend creating a virtual environment before installing:
 ```python
 > conda create --name mtspec python=3.8
 > conda activate mtspec

@@ -4,7 +4,7 @@ Installation
 The multitaper package is composed of a number of Python modules. As of January 2022, multitaper can be installed using conda. `pip` installation is also available. You can also simply download the folder and install and add to your Python path.
 
 Dependencies
-You will need Python 3.7+. The following packages are required:
+You will need Python 3.8+. The following packages are automatically installed:
 
 `numpy`
 
@@ -16,21 +16,20 @@ Optional dependencies for plotting and example Notebooks:
 
 `matplotlib`
 
-With Conda:
+I recommend creating a virtual environment before installing:
 
 .. code-block:: console
 
-   >> conda install -c gprieto multitaper
-
-I recommend creating a virtual environment before:
-
-.. code-block:: console
-
-   >> conda create --name mtspec
+   >> conda create --name mtspec python=3.8
    >> conda activate mtspec
+
+Install with Conda:
+
+.. code-block:: console
+
    >> conda install -c gprieto multitaper
 
-With pip:
+Install with pip:
 
 .. code-block:: console
 
