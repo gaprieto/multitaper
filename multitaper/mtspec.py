@@ -8,8 +8,8 @@ See module mtcross for bi-variate problems
 
 **Classes**
 
-   * MTSpec - A class to represent Thomson's multitaper estimates
    * MTSine - A class to represent Sine Multitaper estimates
+   * MTSpec - A class to represent Thomson's multitaper estimates
 
 **Functions**
 
