@@ -11,6 +11,8 @@ requirements:
     - setuptools
   build:
     - python
+    - numpy
+    - scipy
   run:
     - python
     - numpy

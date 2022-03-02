@@ -14,6 +14,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Operating System :: OS Independent",
     ],
+    install_requires=['numpy', 'scipy'],
     packages=find_packages(),
     package_data={
         "multitaper": [
