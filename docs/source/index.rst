@@ -6,7 +6,7 @@
 Welcome to the `multitaper` package
 ======================================
 
-`multitaper` v.1.1.0
+`multitaper` v.1.1.3
 
 Germán A. Prieto
     Departamento de Geociencias,
