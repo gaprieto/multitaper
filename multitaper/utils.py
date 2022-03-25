@@ -811,6 +811,8 @@ def adaptspec(yk,sk,lamb,iadapt=0):
 
     if (iadapt==2):
         wt   = np.zeros((nfft,kspec), dtype=float)
+        skw  = np.zeros((nfft,kspec), dtype=float)
+
         for k in range(kspec):
             wt[:,k]  = lamb[k]
             skw[:,k] = wt[:,k]**2 * sk[:,k]   
