@@ -1,7 +1,7 @@
 # `multitaper`
 Multitaper codes translated into Python. 
 
-`multitaper` v.1.1.4
+`multitaper` v.1.1.5
 
 Germán A. Prieto
 
@@ -121,7 +121,7 @@ will create a folder `multitaper-examples/`. To run, install `matplotlib` and
 # Citation:
 Please use this reference when citing the codes. 
 
-Prieto, G.A. (2022). multitaper: A multitaper spectrum analysis package in Python. Seis. Res. Lett. Under review.
+Prieto, G.A. (2022). multitaper: A multitaper spectrum analysis package in Python. Seis. Res. Lett. 93(3), 1922-1929.
 
 or
 
