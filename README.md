@@ -1,7 +1,7 @@
 # `multitaper`
 Multitaper codes translated into Python. 
 
-`multitaper` v.1.1.3
+`multitaper` v.1.1.4
 
 Germán A. Prieto
 
@@ -53,6 +53,9 @@ The modules not only includes power spectral density (PSD) estimation with confi
 - v1.1.3
    - Improvements to setup.py, documentation and importing modules/Classes
    - Thanks to Pascal Audet for suggestions.
+- v1.1.5
+   - Minor typo in mt_deconv. (thanks to Miguel Neves)
+   - Typo in definition of njump, thanks to subhacom. 
 
 # Documentation
 - Web page (https://multitaper.readthedocs.io) created using Sphinx and published via readthedocs.

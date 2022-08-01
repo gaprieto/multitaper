@@ -345,7 +345,7 @@ class MTCross:
 
         dfun  = scipy.fft.ifft(trf[:,0],nfft) 
         dfun  = np.real(scipy.fft.fftshift(dfun))
-        dfun  = dfun[:,np.nexaxis]
+        dfun  = dfun[:,np.newaxis]
         dfun  = dfun/float(nfft) 
 
         return dfun 

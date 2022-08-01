@@ -1239,7 +1239,7 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        quad[i]  = np.real(hmodel[2])
 
        pred = np.matmul(hk,np.real(hmodel))
-       sigma2[i] = np.sum(np.abs(Cjk-pred)**2)/(L-nh) 
+       sigma2[i] = np.sum(np.abs(Cjk2-pred)**2)/(L-nh) 
 
        cte_var[i]   = sigma2[i]*covb[0,0]
        slope_var[i] = sigma2[i]*covb[1,1]
@@ -2505,6 +2505,240 @@ def copy_examples(path="./multitaper-examples"):
 
 #-------------------------------------------------------------------------
 # End copy examples folder
+#-------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+# qi_deriv
+#-------------------------------------------------------------------------
+
+def qi_deriv(spec,yk,wt,vn,lamb,nw):
+
+    """
+    Function to calculate the Quadratic Spectrum using the method 
+    developed by Prieto et al. (2007).   
+    
+    The first 2 derivatives of the spectrum are estimated and the 
+    bias associated with curvature (2nd derivative) is reduced. 
+
+    Calculate the Stationary Inverse Theory Spectrum.
+    Basically, compute the spectrum inside the innerband. 
+  
+    This approach is very similar to D.J. Thomson (1990).
+
+    **Parameters**
+    
+    spec : ndarray [nfft,0]    
+        the adaptive multitaper spectrum (so far)
+    yk : ndarrau, complex [npts,kspec]  
+        multitaper eigencoefficients, complex
+    wt : ndarray [nf,kspec]	
+        the weights of the different coefficients. 
+        input is the original multitaper weights, 
+        from the Thomson adaptive weighting. 
+  	vn : ndarray [npts,kspec]  
+        the Slepian sequences
+    lambda : ndarray [kspec]   
+        the eigenvalues of the Slepian sequences
+    nw : float             
+        The time-bandwisth product
+
+    **Returns**
+    
+    qispec : ndarray [nfft,0]
+        the QI spectrum estimate
+    ds : ndarray [nfft,0]	
+        the estimate of the first derivative
+    dds : ndarray [nfft,0]	
+        the estimate of the second derivative
+
+    **References**
+    
+    G. A. Prieto, R. L. Parker, D. J. Thomson, F. L. Vernon, 
+    and R. L. Graham (2007), Reducing the bias of multitaper 
+    spectrum estimates,  Geophys. J. Int., 171, 1269-1281. 
+    doi: 10.1111/j.1365-246X.2007.03592.x.
+   
+    **Notes**
+    
+    In here I have made the Chebyshev polinomials unitless, 
+    meaning that the associated parameters ALL have units 
+    of the PSD and need to be normalized by 1/W for \alpha_1, 
+    1/W**2 for \alpha_2, etc.
+
+    **Modified**
+    
+    Nov 2021 (German A Prieto)
+    
+    Major adjustment in the inverse problem steps. 
+    Now, the constant term is first inverted for, 
+    and then the 1st and 2nd derivative so that we 
+    obtain an independent 2nd derivative.
+    
+    June 5, 2009 (German A. Prieto)
+  	
+    Major change, saving some important
+    values so that if the subroutine is called 
+    more than once, with similar values, many of 
+    the variables are not calculated again, making 
+    the code run much faster. 
+
+    **Calls**
+    
+    scipy.optimize.nnls, scipy.linalg.qr,
+    scipy.linalg.lstsq
+
+    |
+
+    """
+
+    npts  = np.shape(vn)[0] 
+    kspec = np.shape(vn)[1]
+    nfft  = np.shape(yk)[0]
+    nfft2 = 11*nfft
+    nxi   = 79;
+    L     = kspec*kspec;
+
+    if (np.min(lamb) < 0.9): 
+        print('Careful, Poor leakage of eigenvalue ', np.min(lamb));
+        print('Value of kspec is too large, revise? *****') 
+
+    #---------------------------------------------
+    # Assign matrices to memory
+    #---------------------------------------------
+
+    xk     = np.zeros((nfft,kspec), dtype=complex)
+    Vj     = np.zeros((nxi,kspec),  dtype=complex)
+
+    #---------------------------------------
+    # New inner bandwidth frequency
+    #---------------------------------------
+
+    bp   = nw/npts		# W bandwidth
+    xi   = np.linspace(-bp,bp,num=nxi)
+    dxi  = xi[2]-xi[1]
+    f_qi = scipy.fft.fftfreq(nfft2)
+
+    for k in range(kspec):
+        xk[:,k] = wt[:,k]*yk[:,k];
+        for i in range(nxi):
+            om = 2.0*np.pi*xi[i]
+            ct,st = sft(vn[:,k],om) 
+            Vj[i,k] = 1.0/np.sqrt(lamb[k])*complex(ct,st)
+
+    #----------------------------------------------------------------
+    # Create the vectorized Cjk matrix and Pjk matrix { Vj Vk* }
+    #----------------------------------------------------------------
+   
+    C      = np.zeros((L,nfft),dtype=complex)
+    Pk     = np.zeros((L,nxi), dtype=complex)
+ 
+    m = -1;
+    for i in range(kspec):
+        for k in range(kspec):
+            m = m + 1;
+            C[m,:] = ( np.conjugate(xk[:,i]) * (xk[:,k]) );
+
+            Pk[m,:] = np.conjugate(Vj[:,i]) * (Vj[:,k]);
+
+    Pk[:,0]         = 0.5 * Pk[:,0];
+    Pk[:,nxi-1]     = 0.5 * Pk[:,nxi-1];
+
+    #-----------------------------------------------------------
+    # I use the Chebyshev Polynomial as the expansion basis.
+    #-----------------------------------------------------------
+
+    hk     = np.zeros((L,3),   dtype=complex)
+    hcte   = np.ones((nxi,1),  dtype=float)
+    hslope = np.zeros((nxi,1), dtype=float)
+    hquad  = np.zeros((nxi,1), dtype=float)
+    Cjk    = np.zeros((L,1),   dtype=complex)
+    cte    = np.zeros(nfft)
+    cte2   = np.zeros(nfft)
+    slope  = np.zeros(nfft)
+    quad   = np.zeros(nfft)
+    sigma2 = np.zeros(nfft)
+    cte_var    = np.zeros(nfft)
+    slope_var  = np.zeros(nfft)
+    quad_var   = np.zeros(nfft)
+
+    h1 = np.matmul(Pk,hcte) * dxi
+    hk[:,0] = h1[:,0]
+
+    hslope[:,0] = xi/bp 
+    h2 = np.matmul(Pk,hslope) * dxi 
+    hk[:,1] = h2[:,0]
+
+    hquad[:,0] = (2.0*((xi/bp)**2) - 1.0)
+    h3 = np.matmul(Pk,hquad) * dxi
+    hk[:,2] = h3[:,0]
+    nh = np.shape(hk)[1]
+
+    #----------------------------------------------------
+    # Begin Least squares solution (QR factorization)
+    #----------------------------------------------------
+
+    Q,R  = scipy.linalg.qr(hk);
+    Qt   = np.transpose(Q)
+    Leye = np.eye(L)
+    Ri,res,rnk,s = scipy.linalg.lstsq(R,Leye)
+    covb = np.real(np.matmul(Ri,np.transpose(Ri))) 
+
+    for i in range(nfft):
+       Cjk[:,0]    = C[:,i]
+#       hmodel,res,rnk,s = scipy.linalg.lstsq(hk,Cjk)
+       btilde    = np.matmul(Qt,Cjk) 
+       hmodel,res,rnk,s = scipy.linalg.lstsq(R,btilde)
+
+       #---------------------------------------------
+       # Estimate positive spectrumm
+       #---------------------------------------------
+       cte_out  = optim.nnls(np.real(h1), 
+                             np.real(Cjk[:,0]))[0]
+       cte2[i]  = np.real(cte_out) 
+       pred = h1*cte2[i]
+       Cjk2 = Cjk-pred
+       #---------------------------------------------
+       # Now, solve the derivatives
+       #---------------------------------------------
+       btilde    = np.matmul(Qt,Cjk2) 
+       hmodel,res,rnk,s = scipy.linalg.lstsq(R,btilde)
+       cte[i]   = np.real(hmodel[0])
+       slope[i] = -np.real(hmodel[1])
+       quad[i]  = np.real(hmodel[2])
+
+       pred = np.matmul(hk,np.real(hmodel))
+       sigma2[i] = np.sum(np.abs(Cjk-pred)**2)/(L-nh) 
+
+       cte_var[i]   = sigma2[i]*covb[0,0]
+       slope_var[i] = sigma2[i]*covb[1,1]
+       quad_var[i]  = sigma2[i]*covb[2,2]
+
+    slope = slope / (bp)
+    quad  = quad  / (bp**2)
+
+    slope_var = slope_var / (bp**2)
+    quad_var = quad_var / (bp**4)
+
+    qispec = np.zeros((nfft,1), dtype=float)    
+    for i in range(nfft):
+        qicorr = (quad[i]**2)/((quad[i]**2) + quad_var[i] ) 
+        qicorr = qicorr * (1/6)*(bp**2)*quad[i]
+
+        qispec[i] = cte2[i] - qicorr
+        #qispec[i] = spec[i] - qicorr
+
+
+    s0  = cte2;
+    ds  = -slope;
+    dds = quad;
+
+    qipred = np.transpose(np.vstack((s0,ds,dds)))
+    qivar  = np.transpose(np.vstack((cte_var,slope_var,quad_var)))
+
+    return qipred, qivar
+
+#-------------------------------------------------------------------------
+# end qi_deriv
 #-------------------------------------------------------------------------
 
 
