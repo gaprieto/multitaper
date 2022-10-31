@@ -24,13 +24,5 @@ setup(
         ]
     },
     python_requires=">=3.7",
+    install_requires=["numpy", "scipy"],
 )
-
-
-#---------------------------------------------
-# On a Mac adding this creates a problem
-# but should be added for completeness.
-#
-#     install_requires=['numpy', 'scipy'],
-#
-#---------------------------------------------
