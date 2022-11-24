@@ -40,13 +40,14 @@ import scipy.linalg as linalg
 import scipy.interpolate as interp
 import scipy.optimize as optim
 import os
-
+from numba import njit
 
 
 #-------------------------------------------------------------------------
 # SET_XINT - Set up weights and sample points for Ierly quadrature
 #-------------------------------------------------------------------------
 
+@njit(cache=True)
 def set_xint(ising):
     """
     Sets up weights and sample points for Ierley quadrature,
@@ -129,6 +130,7 @@ def set_xint(ising):
 # XINT - Numerical integration in the Fourier Domain using Ierly's method
 #-------------------------------------------------------------------------
 
+@njit(cache=True)
 def xint(a,b,tol,vn,npts):
     """
     Quadrature by Ierley's method of Chebychev sampling.
@@ -201,9 +203,6 @@ def xint(a,b,tol,vn,npts):
     #--------------------------- 
     #   Check tol
     #---------------------------
-
-    if (tol <= 0.0):
-        raise ValueError("In xint tol must be > 0 ", tol)
 
     est = np.zeros(nomx,dtype=float)
     fv  = np.zeros(lomx+1,dtype=float)
@@ -403,7 +402,7 @@ def dpss(npts,nw,kspec=None):
     W = nw/float(npts)
 
     if (kspec is None):
-       kspec = np.int(np.round(2*nw-1))
+       kspec = int(np.round(2*nw-1))
 
     #-----------------------------------------------------
     # Get the DPSS, using SCIPY 
@@ -521,7 +520,7 @@ def dpss2(npts,nw,nev=None):
     bw = nw/float(npts)
 
     if (nev is None):
-       nev = np.int(np.round(2*nw-1))
+       nev = int(np.round(2*nw-1))
 
     #-----------------------------------------------------
     # Check size of vectors and half lengths
@@ -1763,6 +1762,7 @@ def df_spec_old(x,y=None,fmin=None,fmax=None):
 # SFT - slow fourier transform
 #-------------------------------------------------------------------------
 
+@njit
 def sft(x,om):
     """
     calculates the (slow) fourier transform of real 
