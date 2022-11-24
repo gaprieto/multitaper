@@ -403,7 +403,7 @@ def dpss(npts,nw,kspec=None):
     W = nw/float(npts)
 
     if (kspec is None):
-       kspec = np.int(np.round(2*nw-1))
+       kspec = int(np.round(2*nw-1))
 
     #-----------------------------------------------------
     # Get the DPSS, using SCIPY 
@@ -521,7 +521,7 @@ def dpss2(npts,nw,nev=None):
     bw = nw/float(npts)
 
     if (nev is None):
-       nev = np.int(np.round(2*nw-1))
+       nev = int(np.round(2*nw-1))
 
     #-----------------------------------------------------
     # Check size of vectors and half lengths
