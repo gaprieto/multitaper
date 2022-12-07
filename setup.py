@@ -24,7 +24,7 @@ setup(
         ]
     },
     python_requires=">=3.7",
-    install_requires=["numpy>=1.18","scipy","numba"],
+    install_requires=["numpy>=1.19","scipy","numba"],
 )
 
 
