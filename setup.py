@@ -24,7 +24,6 @@ setup(
         ]
     },
     python_requires=">=3.7",
-    install_requires=["numpy>=1.19","scipy","numba"],
 )
 
 
@@ -32,11 +31,12 @@ setup(
 # On a Mac adding this creates a problem
 # but should be added for completeness.
 #
+#    install_requires=["numpy>=1.19","scipy","numba"],
 #     install_requires=['numpy', 'scipy', 'numba'],
 #     install_requires=[
-        'numpy>=1.18',
-        'scipy',
-        'numba'
-    ]
+#        'numpy>=1.18',
+#        'scipy',
+#        'numba'
+#    ]
 #
 #---------------------------------------------
