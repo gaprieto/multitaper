@@ -28,8 +28,7 @@ setup(
         'numpy>=1.18',
         'scipy',
         'numba'
-    ]
-
+        ],
 )
 
 
