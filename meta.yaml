@@ -13,10 +13,12 @@ requirements:
     - python
     - numpy
     - scipy
+    - numba
   run:
     - python
     - numpy
     - scipy
+    - numba
     - matplotlib
     - pandas
     - jupyter
