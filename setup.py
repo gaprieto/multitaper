@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="multitaper",
-    version="1.1.5",
+    version="1.1.6",
     author="German A. Prieto ",
     author_email="gaprietogo@unal.edu.co",
     description="Multitaper codes translated into Python",
@@ -24,6 +24,7 @@ setup(
         ]
     },
     python_requires=">=3.7",
+    install_requires=['numpy', 'scipy', 'numba'],
 )
 
 

@@ -1,7 +1,7 @@
 # `multitaper`
 Multitaper codes translated into Python. 
 
-`multitaper` v.1.1.5
+`multitaper` v.1.1.6
 
 Germán A. Prieto
 
@@ -56,6 +56,10 @@ The modules not only includes power spectral density (PSD) estimation with confi
 - v1.1.5
    - Minor typo in mt_deconv. (thanks to Miguel Neves)
    - Typo in definition of njump, thanks to subhacom. 
+- v1.1.6
+   - Speed up of Jackknife, using vectorized scipy.stat.t.ppf
+   - Changed np.int to int in some places. 
+   - Added Numba speedup (thanks to k-kemna)
 
 # Documentation
 - Web page (https://multitaper.readthedocs.io) created using Sphinx and published via readthedocs.

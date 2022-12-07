@@ -181,7 +181,7 @@ class MTSpec:
         #-----------------------------------------------------
 
         if (kspec < 1):
-            kspec = np.int(np.round(2*nw-1))
+            kspec = int(np.round(2*nw-1))
 
         #-----------------------------------------------------
         # Check dimensions of input vector
@@ -219,7 +219,7 @@ class MTSpec:
         # Define other parameters (nfft, nf, freq vector)
         #-----------------------------------------------------------------
        
-        nfft = np.int(nfft)
+        nfft = int(nfft)
         if (nfft < npts):
             nfft = 2*npts + 1
         if (nfft%2 == 0):
@@ -580,7 +580,7 @@ class MTSpec:
 
         """
    
-        df_spec, df_cohe, df_phase = utils.df_spec(self)
+        df_spec, df_cohe, df_phase, freq  = utils.df_spec(self)
  
         return df_spec, df_cohe, df_phase
     
@@ -781,7 +781,7 @@ class MTSine:
             nf     = int(npts/2+1)
         else:
             nf     = int((npts+1)/2) 
-        nfft       = np.int(2*npts)
+        nfft       = int(2*npts)
         freq       = scipy.fft.rfftfreq(npts,dt)
         df         = freq[2]-freq[1]
         freq       = freq[:, np.newaxis]
