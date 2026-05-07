@@ -1234,7 +1234,7 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        #---------------------------------------------
        cte_out  = optim.nnls(np.real(h1), 
                              np.real(Cjk[:,0]))[0]
-       cte2[i]  = np.real(cte_out) 
+       cte2[i]  = np.real(cte_out).squeeze() 
        pred = h1*cte2[i]
        Cjk2 = Cjk-pred
        #---------------------------------------------
@@ -1242,9 +1242,9 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        #---------------------------------------------
        btilde    = np.matmul(Qt,Cjk2) 
        hmodel,res,rnk,s = scipy.linalg.lstsq(R,btilde)
-       cte[i]   = np.real(hmodel[0])
-       slope[i] = -np.real(hmodel[1])
-       quad[i]  = np.real(hmodel[2])
+       cte[i]   = np.real(hmodel[0]).squeeze()
+       slope[i] = -np.real(hmodel[1]).squeeze()
+       quad[i]  = np.real(hmodel[2]).squeeze()
 
        pred = np.matmul(hk,np.real(hmodel))
        sigma2[i] = np.sum(np.abs(Cjk2-pred)**2)/(L-nh) 
