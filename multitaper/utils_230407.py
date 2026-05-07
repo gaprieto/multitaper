@@ -40,7 +40,7 @@ import scipy.linalg as linalg
 import scipy.interpolate as interp
 import scipy.optimize as optim
 import os
-import time
+from numba import njit
 
 
 #-------------------------------------------------------------------------
@@ -102,12 +102,21 @@ def set_xint(ising):
 
             rk = np.arange(0, nx+1, 2, dtype=float)
             ck = np.where(rk == 0, 2.0, 4.0)
+            rk = rk[:,newaxis]
             si = np.sum(ck * np.cos(rk * t) / (1.0 - rk**2), axis=0)
             
+            #for k in range(0,nx+1,2):
+            #    ck=4.0
+            #    if (k == 0):
+            #        ck=2.0
+            #    rk=float(k)
+            #    si=si+ck*np.cos(rk*t)/(1.0-rk*rk)
+
             if (i==0 or i==nhalf):
                 si=0.5*si
 
             t = np.cos(t)
+
             if (ising == 2): 
                 t=0.5*pi*(1.0 +t)
                 si=si*0.5 * np.sin(t)*pi
@@ -119,15 +128,94 @@ def set_xint(ising):
                 w[index-1,i] = 0.5 *si/float(n)
         # end i loop
     # end index loop         
-    
-
+      
     return w, x
 
+
+@njit(cache=True)
+def set_xint2(ising):
+    """
+    Sets up weights and sample points for Ierley quadrature,
+    
+    Slightly changed from original code, to avoid using common
+    blocks. Also avoided using some go to statements, not needed.
+    
+    *Parameters*
+    
+    ising : integer
+        ising=1 	
+            integrand is analytic in closed interval
+        ising=2	
+            integrand may have bounded singularities 
+            at end points
+       
+    *Returns*
+    
+    w : ndarray (nomx,lomx+1)
+        weights
+    x : sample points (lomx+1)	
+        sample points
+    
+    lomx=number of samples = 2**nomx
+
+    *Modified*
+    
+    November 2004 (German A. Prieto)
+
+    |
+
+    """
+
+    nomx = 8
+    lomx = 256
+    w = np.zeros((nomx,lomx+1),dtype=float)
+    x = np.zeros(lomx+1,dtype=float)
+
+    pi = np.pi
+    n  = 2
+
+    for index in range(1,nomx+1):
+        n  = 2*n
+        nx = n-2
+        if (index == 1):
+            nx=4
+      
+        pin   = pi/float(n)
+        nhalf = int(n/2) 
+        for i in range(nhalf+1):
+            t  = float(i)*pin
+            si = 0.0
+            for k in range(0,nx+1,2):
+                ck=4.0
+                if (k == 0):
+                    ck=2.0
+                rk=float(k)
+                si=si+ck*np.cos(rk*t)/(1.0-rk*rk)
+
+            if (i==0 or i==nhalf):
+                si=0.5*si
+
+            t = np.cos(t)
+
+            if (ising == 2): 
+                t=0.5*pi*(1.0 +t)
+                si=si*0.5 * np.sin(t)*pi
+                t=np.cos(t)
+                x[i]          = 0.5 *(1.0 +t)
+                w[index-1, i] = 0.5 *si/float(n)
+            elif (ising == 1):
+                x[i]         = 0.5 *(1.0 +t)
+                w[index-1,i] = 0.5 *si/float(n)
+        # end i loop
+    # end index loop         
+      
+    return w, x
 
 #-------------------------------------------------------------------------
 # XINT - Numerical integration in the Fourier Domain using Ierly's method
 #-------------------------------------------------------------------------
 
+@njit(cache=True)
 def xint(a,b,tol,vn,npts):
     """
     Quadrature by Ierley's method of Chebychev sampling.
@@ -195,7 +283,7 @@ def xint(a,b,tol,vn,npts):
     nomx  = 8
     lomx  = 256
     ising = 1
-    w, x  = set_xint(ising)
+    w, x = set_xint(ising)
 
     #--------------------------- 
     #   Check tol
@@ -409,7 +497,7 @@ def dpss(npts,nw,kspec=None):
     #    Interpolate if necesary
     #-----------------------------------------------------
 
-    if (npts < 1e6):
+    if (npts < 1e5):
         v,lamb2 = signal.windows.dpss(npts, nw, Kmax=kspec, 
                             sym=True,norm=2,
                             return_ratios=True)
@@ -809,15 +897,17 @@ def adaptspec(yk,sk,lamb,iadapt=0):
 
 
     if (iadapt==2):
+        wt   = np.zeros((nfft,kspec), dtype=float)
+        skw  = np.zeros((nfft,kspec), dtype=float)
 
-        # Sped up version
-        lmat   = np.tile(lamb, (nfft, 1))
-        wt     = lmat * np.ones((nfft, kspec))
-        skw    = lmat**2 * sk
-        wtsum  = np.sum(wt**2, axis=1)
-        skwsum = np.sum(skw, axis=1)
-        sbar   = skwsum / wtsum
-        spec   = sbar[:, None]
+        for k in range(kspec):
+            wt[:,k]  = lamb[k]
+            skw[:,k] = wt[:,k]**2 * sk[:,k]   
+
+        wtsum     = np.sum(wt**2,axis=1)
+        skwsum    = np.sum(skw,axis=1)
+        sbar      = skwsum / wtsum
+        spec      = sbar[:,None] 
 
         #------------------------------------------------------------
         # Number of Degrees of freedom
@@ -1771,6 +1861,7 @@ def df_spec_old(x,y=None,fmin=None,fmax=None):
 # SFT - slow fourier transform
 #-------------------------------------------------------------------------
 
+@njit
 def sft(x,om):
     """
     calculates the (slow) fourier transform of real 

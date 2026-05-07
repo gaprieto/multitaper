@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="multitaper",
-    version="1.2.0",
+    version="1.2.1",
     author="German A. Prieto ",
     author_email="gaprietogo@unal.edu.co",
     description="Multitaper codes translated into Python",
@@ -31,12 +31,11 @@ setup(
 # On a Mac adding this creates a problem
 # but should be added for completeness.
 #
-#    install_requires=["numpy>=1.19","scipy","numba"],
-#     install_requires=['numpy', 'scipy', 'numba'],
+#    install_requires=["numpy>=1.19","scipy"],
+#     install_requires=['numpy', 'scipy'],
 #     install_requires=[
 #        'numpy>=1.18',
-#        'scipy',
-#        'numba'
+#        'scipy'
 #    ]
 #
 #---------------------------------------------

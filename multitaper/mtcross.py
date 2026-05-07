@@ -600,7 +600,7 @@ class SineCross:
             nf     = int(npts/2+1)
         else:
             nf     = int((npts+1)/2) 
-        nfft       = np.int(2*npts)
+        nfft       = int(2*npts)
         freq       = scipy.fft.rfftfreq(npts,dt)
         df         = freq[2]-freq[1]
         freq       = freq[:, np.newaxis]
