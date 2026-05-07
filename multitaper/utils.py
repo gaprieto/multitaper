@@ -1234,13 +1234,10 @@ def qiinv(spec,yk,wt,vn,lamb,nw):
        #---------------------------------------------
        cte_out  = optim.nnls(np.real(h1), 
                              np.real(Cjk[:,0]))[0]
-<<<<<<< HEAD
        cte2[i]  = np.real(cte_out).squeeze() 
-=======
-       cte2[i]  = np.real(cte_out).squeeze()
->>>>>>> 940fb3818ce7e71e83a3ec24da60005a5f3f3725
        pred = h1*cte2[i]
        Cjk2 = Cjk-pred
+
        #---------------------------------------------
        # Now, solve the derivatives
        #---------------------------------------------
